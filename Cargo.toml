@@ -5,3 +5,6 @@ authors = ["sts10 <sschlinkert@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+reqwest = "0.8.6"
+rpassword = "2.0.0"
+sha1 = "0.6.0"
