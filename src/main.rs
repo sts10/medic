@@ -6,32 +6,41 @@ extern crate sha1;
 use keepass::{Database, Node, OpenDBError};
 use std::fs::File;
 use std::io;
-use std::io::BufRead;
-use std::io::BufReader;
-use std::str::FromStr;
 // Securely read a password and query the Pwned Passwords API to
 // determine if it's been breached ever.
 
 fn main() {
     // let pass = rpassword::prompt_password_stdout("Password: ").unwrap();
     // eprintln!("pass is {}", pass);
-    println!("Enter file path");
-    let file_path = gets().unwrap();
-    let passwords = get_passwords(file_path);
+    println!("Enter file path (test-files/test_db.kdbx)");
+    let mut file_path = gets().unwrap();
+    if file_path == "t" {
+        file_path = "test-files/test_db.kdbx".to_string();
+    }
+    let entries = get_entries(&file_path);
 
-    for password in passwords {
-        let appearances = check_password(&password);
-        println!("the password {} was found {} times", password, appearances);
+    for entry in entries {
+        let appearances = check_password(&entry.pass);
+        println!(
+            "Your password for {} on {} was found {} times",
+            entry.username, entry.title, appearances
+        );
     }
 }
 
-fn get_passwords(file_path: String) -> Vec<String> {
-    println!("Made it here");
-    let mut entries: Vec<String> = [].to_vec();
+#[derive(Debug)]
+struct Entry {
+    title: String,
+    username: String,
+    pass: String,
+}
+
+fn get_entries(file_path: &str) -> Vec<Entry> {
+    let mut entries: Vec<Entry> = vec![];
 
     let db_pass = rpassword::read_password_from_tty(Some("Enter the database password: ")).unwrap();
     // Open KeePass database
-    let db = File::open(std::path::Path::new("test-files/test_db.kdbx"))
+    let db = File::open(std::path::Path::new(file_path))
         .map_err(|e| OpenDBError::Io(e))
         // .and_then(|mut db_file| Database::open(&mut db_file, "password"))
         .and_then(|mut db_file| Database::open(&mut db_file, &db_pass))
@@ -44,11 +53,12 @@ fn get_passwords(file_path: String) -> Vec<String> {
                 println!("Saw group '{0}'", g.name);
             }
             Node::Entry(e) => {
-                let title = e.get_title().unwrap();
-                let user = e.get_username().unwrap();
-                let pass = e.get_password().unwrap().to_string();
-                println!("Entry '{0}': '{1}' : '{2}'", title, user, pass);
-                entries.push(pass);
+                let this_entry = Entry {
+                    title: e.get_title().unwrap().to_string(),
+                    username: e.get_username().unwrap().to_string(),
+                    pass: e.get_password().unwrap().to_string(),
+                };
+                entries.push(this_entry);
             }
         }
     }
@@ -57,7 +67,6 @@ fn get_passwords(file_path: String) -> Vec<String> {
 
 fn check_password(pass: &str) -> usize {
     let digest = sha1::Sha1::from(pass).digest().to_string().to_uppercase();
-    eprintln!("digest is {}", digest);
     let (prefix, suffix) = (&digest[..5], &digest[5..]);
 
     // API requires us to submit just the first 5 characters of the hash
