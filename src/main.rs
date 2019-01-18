@@ -6,9 +6,9 @@ extern crate sha1;
 use keepass::{Database, Node, OpenDBError};
 use std::fs::File;
 use std::io;
+use std::io::BufRead;
+use std::io::BufReader;
 use std::str::FromStr;
-// Securely read a password and query the Pwned Passwords API to
-// determine if it's been breached ever.
 
 fn main() {
     // let pass = rpassword::prompt_password_stdout("Password: ").unwrap();
@@ -120,8 +120,18 @@ fn check_password_online(pass: &str) -> usize {
     return number_of_matches;
 }
 
-fn check_password_offline(pass: &str, passwords_file: &str) {
+fn check_password_offline(pass: &str, passwords_file_path: &str) {
     println!("Can't check passwords offline yet");
+    // let digest = sha1::Sha1::from(pass).digest().to_string().to_uppercase();
+    // let hashes: Vec<String> = read_by_line(passwords_file_path).unwrap();
+    // let mut number_of_matches: usize = 0;
+    // for this_hash in hashes {
+    //     println!("this hash is {}", this_hash);
+    //     if this_hash.to_uppercase() == digest {
+    //         number_of_matches = number_of_matches + 1;
+    //     }
+    // }
+    // number_of_matches
 }
 fn gets() -> io::Result<String> {
     let mut input = String::new();
@@ -150,4 +160,23 @@ fn ensure<T: FromStr>(try_again: &str) -> io::Result<T> {
 fn split_and_vectorize<'a>(string_to_split: &'a str, splitter: &str) -> Vec<&'a str> {
     let split = string_to_split.split(splitter);
     split.collect::<Vec<&str>>()
+}
+
+fn read_by_line<T: FromStr>(file_path: &str) -> io::Result<Vec<T>> {
+    let mut vec = Vec::new();
+    let f = match File::open(file_path.trim_matches(|c| c == '\'' || c == ' ')) {
+        Ok(res) => res,
+        Err(e) => return Err(e),
+    };
+    let file = BufReader::new(&f);
+    for line in file.lines() {
+        match line?.parse() {
+            Ok(l) => vec.push(l),
+            Err(_e) => {
+                eprintln!("Error");
+                continue;
+            }
+        }
+    }
+    Ok(vec)
 }
