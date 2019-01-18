@@ -11,19 +11,17 @@ use std::io::BufReader;
 use std::str::FromStr;
 
 fn main() {
-    // let pass = rpassword::prompt_password_stdout("Password: ").unwrap();
-    // eprintln!("pass is {}", pass);
     println!("To check your KeePass database's passwords, do you want to:");
     println!("  1. Check OFFLINE: Give me a database of SHA-1 hashed passwords?");
     println!("  2. Check ONLINE : Send the first 5 characters of your passwords' hashes over the internet to HaveIBeenPwned?");
     let choice: u32 = ensure("Please try again.").unwrap();
 
-    // I don't like this but it works for now
-    let mut passwords_file: String = "".to_string();
-    if choice == 1 {
+    let passwords_file = if choice == 1 {
         println!("Enter file path of hashed password to check against");
-        passwords_file = gets().unwrap();
-    }
+        gets().unwrap()
+    } else {
+        "".to_string()
+    };
 
     println!("Enter file path of your KeePass database file");
     let mut keepass_db_file_path = gets().unwrap();
@@ -36,8 +34,7 @@ fn main() {
         let mut appearances = 0;
         if choice == 2 {
             appearances = check_password_online(&entry.pass);
-        } else if passwords_file.len() > 0 {
-            // appearances = check_password_offline(&entry.pass, &passwords_file);
+        } else if passwords_file.is_empty() {
             check_password_offline(&entry.pass, &passwords_file);
         }
 
@@ -66,7 +63,8 @@ fn get_entries_from_keepass_db(file_path: &str) -> Vec<Entry> {
     // Open KeePass database
     println!("Attempting to unlock your KeePass database...");
     let db = match File::open(std::path::Path::new(file_path))
-        .map_err(|e| OpenDBError::Io(e))
+        // .map_err(|e| OpenDBError::Io(e))
+        .map_err(OpenDBError::Io)
         .and_then(|mut db_file| Database::open(&mut db_file, &db_pass))
     {
         Ok(db) => db,
