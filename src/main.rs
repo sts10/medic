@@ -40,17 +40,20 @@ fn get_entries(file_path: &str) -> Vec<Entry> {
 
     let db_pass = rpassword::read_password_from_tty(Some("Enter the database password: ")).unwrap();
     // Open KeePass database
-    let db = File::open(std::path::Path::new(file_path))
+    let db = match File::open(std::path::Path::new(file_path))
         .map_err(|e| OpenDBError::Io(e))
-        // .and_then(|mut db_file| Database::open(&mut db_file, "password"))
         .and_then(|mut db_file| Database::open(&mut db_file, &db_pass))
-        .unwrap();
+    {
+        Ok(db) => db,
+        Err(e) => panic!("Error: {}", e),
+    };
 
+    println!("Checking your passwords...");
     // Iterate over all Groups and Nodes
     for node in &db.root {
         match node {
             Node::Group(g) => {
-                println!("Saw group '{0}'", g.name);
+                // println!("Saw group '{}'", g.name);
             }
             Node::Entry(e) => {
                 let this_entry = Entry {
