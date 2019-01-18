@@ -41,10 +41,12 @@ fn main() {
             check_password_offline(&entry.pass, &passwords_file);
         }
 
-        println!(
-            "Your password for {} on {} was found {} times",
-            entry.username, entry.title, appearances
-        );
+        if appearances > 0 {
+            println!(
+                "Oh no! I found your password for {} on {} {} times before",
+                entry.username, entry.title, appearances
+            );
+        }
     }
 }
 
@@ -62,6 +64,7 @@ fn get_entries_from_keepass_db(file_path: &str) -> Vec<Entry> {
         rpassword::read_password_from_tty(Some("Enter the password to your KeePass database: "))
             .unwrap();
     // Open KeePass database
+    println!("Attempting to unlock your KeePass database...");
     let db = match File::open(std::path::Path::new(file_path))
         .map_err(|e| OpenDBError::Io(e))
         .and_then(|mut db_file| Database::open(&mut db_file, &db_pass))
@@ -105,16 +108,16 @@ fn check_password_online(pass: &str) -> usize {
     // Reponse is a series of lines like
     //  suffix:N
     // Where N is the number of times that password has appeared.
-    let mut number_of_matches: usize = 0;
+    // let mut number_of_matches: usize = 0;
 
     for line in body.lines() {
         let this_suffix = split_and_vectorize(line, ":")[0];
         let this_number_of_matches = split_and_vectorize(line, ":")[1].parse::<usize>().unwrap();
         if this_suffix == suffix {
-            number_of_matches = number_of_matches + this_number_of_matches;
+            return this_number_of_matches;
         }
     }
-    return number_of_matches;
+    0
 }
 
 fn check_password_offline(pass: &str, passwords_file_path: &str) {
