@@ -29,8 +29,8 @@ However, once I successfully download that password list, which anyone can do [h
 3. Write tests
 4. Test how it works with a KeePass database that uses a key file and/or Challenge+Accept
 5. Check for any repeated passwords
-6. Use zxcvbn to check for password strength
-7. Use zxcvbn to check for _similar_ passwords?
+6. Use [zxcvbn](https://github.com/shssoichiro/zxcvbn-rs) to check for password strength
+7. Use [zxcvbn](https://github.com/shssoichiro/zxcvbn-rs) to check for _similar_ passwords?
 8. Design a logo?!
 
 ## Reference
