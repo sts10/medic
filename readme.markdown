@@ -19,8 +19,18 @@ However, once I successfully download that password list, which anyone can do [h
 ### Running the tool
 
 1. While in the repo, run `cargo run` or `cargo run --release`
-2. Choose whether to check your KeePass database's password offline or online.
+2. Choose whether to check your KeePass database's passwords offline or online.
 3. Follow the subsequent instructions.
+
+## To do
+
+1. Have tool be able to read password list from a downloaded file (see commented out code, which is untested)
+2. Better error handling
+3. Test how it works with a KeePass database that uses a key file and/or Challenge+Accept
+4. Check for any repeated passwords
+5. Use zxcvbn to check for password strength
+6. Use zxcvbn to check for _similar_ passwords?
+7. Design a logo?!
 
 ## Reference
 
