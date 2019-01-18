@@ -26,11 +26,12 @@ However, once I successfully download that password list, which anyone can do [h
 
 1. Have tool be able to read password list from a downloaded file (see commented out code, which is untested)
 2. Better error handling
-3. Test how it works with a KeePass database that uses a key file and/or Challenge+Accept
-4. Check for any repeated passwords
-5. Use zxcvbn to check for password strength
-6. Use zxcvbn to check for _similar_ passwords?
-7. Design a logo?!
+3. Write tests
+4. Test how it works with a KeePass database that uses a key file and/or Challenge+Accept
+5. Check for any repeated passwords
+6. Use zxcvbn to check for password strength
+7. Use zxcvbn to check for _similar_ passwords?
+8. Design a logo?!
 
 ## Reference
 
