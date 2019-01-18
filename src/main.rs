@@ -103,11 +103,8 @@ fn check_password_online(pass: &str) -> usize {
     // eprintln!("body is {}", body);
 
     // Reponse is a series of lines like
-    //
     //  suffix:N
-    //
     // Where N is the number of times that password has appeared.
-    //
     let mut number_of_matches: usize = 0;
 
     for line in body.lines() {
