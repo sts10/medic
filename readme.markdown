@@ -6,6 +6,8 @@ Currently the tool pings [the Pwned Passwords API](https://haveibeenpwned.com/AP
 
 However, once I successfully download that password list, which anyone can do [here](https://haveibeenpwned.com/Passwords), I hope to make this tool optionally work completely offline for increased security.
 
+**WARNING**: This software is a work in progress and still experimental. I would **NOT** use it with real KeePass databases or passwords just yet.
+
 ## Usage
 
 ### Setup 
