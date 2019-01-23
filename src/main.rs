@@ -17,15 +17,17 @@ fn main() {
     let choice: u32 = ensure("Please try again.").unwrap();
 
     let passwords_file_path = if choice == 1 {
-        println!("Enter file path of hashed passwords to check against.");
+        println!("Enter file path of hashed passwords to check against.\n");
         println!("To download a copy of very large list of password hashes from HaveIBeenPwned, go to: https://haveibeenpwned.com/Passwords");
-        println!("Choose the SHA-1 version, ordered by prevalence");
+        println!("Choose the SHA-1 version, ordered by prevalence. Then extract/unzip it, revelaing an even larger txt file.\n");
+        println!("Enter file path of that file here.");
+
         gets().unwrap()
     } else {
         "".to_string()
     };
 
-    println!("Enter file path of your KeePass database file");
+    println!("\nEnter file path of your KeePass database file");
     let mut keepass_db_file_path = gets().unwrap();
     if keepass_db_file_path == "t" {
         keepass_db_file_path = "test-files/test_db.kdbx".to_string();
