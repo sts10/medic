@@ -15,23 +15,23 @@ However, once I successfully download that password list, which anyone can do [h
 1. [Install Rust](https://www.rust-lang.org/tools/install) if you haven't already
 2. Clone down the repo
 3. Once this tool works offline, you'll need to [download the Pwned Passwords list](https://haveibeenpwned.com/Passwords), ideally via torrent.
+4. The torrent downloads a `.7z` compressed file. Double click it to extract it to a ~22 GB text file. That's what this program will need to work with.
 
 ### Running the tool
 
-1. While in the repo, run `cargo run` or `cargo run --release`
+1. While in the repo, run `cargo run --release` or `cargo run`
 2. Choose whether to check your KeePass database's passwords offline or online.
 3. Follow the subsequent instructions.
 
 ## To do
 
-1. Have tool be able to read password list from a downloaded file (see commented out code, which is untested)
-2. Better error handling
-3. Write tests
-4. Test how it works with a KeePass database that uses a key file and/or Challenge+Accept
-5. Check for any repeated passwords
-6. Use [zxcvbn](https://github.com/shssoichiro/zxcvbn-rs) to check for password strength
-7. Use [zxcvbn](https://github.com/shssoichiro/zxcvbn-rs) to check for _similar_ passwords?
-8. Design a logo?!
+1. Better error handling
+2. Write tests
+3. Test how it works with a KeePass database that uses a key file and/or Challenge+Accept
+4. Check for any repeated passwords
+5. Use [zxcvbn](https://github.com/shssoichiro/zxcvbn-rs) to check for password strength
+6. Use [zxcvbn](https://github.com/shssoichiro/zxcvbn-rs) to check for _similar_ passwords?
+7. Design a logo?!
 
 ## Reference
 
