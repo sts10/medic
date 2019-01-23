@@ -1,2 +1,4 @@
 /target
 **/*.rs.bk
+scrap_code/
+/scrap_code/
