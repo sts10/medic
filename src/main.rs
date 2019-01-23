@@ -17,7 +17,7 @@ fn main() {
     let choice: u32 = ensure("Please try again.").unwrap();
 
     let passwords_file_path = if choice == 1 {
-        println!("Enter file path of hashed password to check against");
+        println!("Enter file path of hashed passwords to check against. Download one here: https://haveibeenpwned.com/Passwords");
         gets().unwrap()
     } else {
         "".to_string()
@@ -31,9 +31,12 @@ fn main() {
     let entries = get_entries_from_keepass_db(&keepass_db_file_path);
 
     if choice == 1 && !passwords_file_path.is_empty() {
-        let bad_entries = chug_through(&passwords_file_path, entries).unwrap();
-        for bad_entry in bad_entries {
-            println!("Found a bad entry: {:?}", bad_entry);
+        let breached_entries = check_database_offline(&passwords_file_path, entries).unwrap();
+        for breached_entry in breached_entries {
+            println!(
+                "Oh no! I found your password for {} on {}",
+                breached_entry.username, breached_entry.title
+            );
         }
     } else {
         for entry in entries {
@@ -127,8 +130,8 @@ fn check_password_online(pass: &str) -> usize {
     // let mut number_of_matches: usize = 0;
 
     for line in body.lines() {
-        let this_suffix = split_and_vectorize(line, ":")[0];
-        let this_number_of_matches = split_and_vectorize(line, ":")[1].parse::<usize>().unwrap();
+        let this_suffix = &line[..35];
+        let this_number_of_matches = line[36..].parse::<usize>().unwrap();
         if this_suffix == suffix {
             return this_number_of_matches;
         }
@@ -136,9 +139,12 @@ fn check_password_online(pass: &str) -> usize {
     0
 }
 
-fn chug_through(passwords_file_path: &str, entries: Vec<Entry>) -> io::Result<Vec<Entry>> {
+fn check_database_offline(
+    passwords_file_path: &str,
+    entries: Vec<Entry>,
+) -> io::Result<Vec<Entry>> {
     let mut this_chunk = Vec::new();
-    let mut bad_entries: Vec<Entry> = Vec::new();
+    let mut breached_entries: Vec<Entry> = Vec::new();
     let mut number_of_hashes_checked = 0;
 
     let f = match File::open(passwords_file_path.trim_matches(|c| c == '\'' || c == ' ')) {
@@ -150,19 +156,21 @@ fn chug_through(passwords_file_path: &str, entries: Vec<Entry>) -> io::Result<Ve
         this_chunk.push(line.unwrap());
         if this_chunk.len() > 1_000_000 {
             match check_this_chunk(&entries, &this_chunk) {
-                Ok(mut vec_of_bad_entries) => bad_entries.append(&mut vec_of_bad_entries),
-                Err(_e) => eprintln!("found no bad entries in this chunk"),
+                Ok(mut vec_of_breached_entries) => {
+                    breached_entries.append(&mut vec_of_breached_entries)
+                }
+                Err(_e) => eprintln!("found no breached entries in this chunk"),
             }
             number_of_hashes_checked += 1_000_000;
             println!("I've checked {} hashes", number_of_hashes_checked);
             this_chunk.clear();
         }
     }
-    Ok(bad_entries)
+    Ok(breached_entries)
 }
 
 fn check_this_chunk(entries: &[Entry], chunk: &[String]) -> io::Result<Vec<Entry>> {
-    let mut bad_entries = Vec::new();
+    let mut breached_entries = Vec::new();
 
     for line in chunk {
         // let this_hash = split_and_vectorize(&line, ":")[0];
@@ -170,12 +178,15 @@ fn check_this_chunk(entries: &[Entry], chunk: &[String]) -> io::Result<Vec<Entry
 
         for entry in entries {
             if this_hash == entry.digest {
-                println!("found a bad entry: {:?}", entry);
-                bad_entries.push(entry.clone());
+                println!(
+                    "Oh no! I found your password for {} on {}",
+                    entry.username, entry.title
+                );
+                breached_entries.push(entry.clone());
             }
         }
     }
-    Ok(bad_entries)
+    Ok(breached_entries)
 }
 
 fn gets() -> io::Result<String> {
@@ -201,8 +212,4 @@ fn ensure<T: FromStr>(try_again: &str) -> io::Result<T> {
             }
         };
     }
-}
-fn split_and_vectorize<'a>(string_to_split: &'a str, splitter: &str) -> Vec<&'a str> {
-    let split = string_to_split.split(splitter);
-    split.collect::<Vec<&str>>()
 }
