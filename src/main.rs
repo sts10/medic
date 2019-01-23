@@ -31,8 +31,10 @@ fn main() {
     let entries = get_entries_from_keepass_db(&keepass_db_file_path);
 
     if choice == 1 && !passwords_file_path.is_empty() {
-        let hashes: Vec<String> = read_by_line_simple(&passwords_file_path).unwrap();
-        evaluate_password_offline(entries, hashes);
+        let bad_entries = chug_through(&passwords_file_path, entries).unwrap();
+        for bad_entry in bad_entries {
+            println!("Found a bad entry: {:?}", bad_entry);
+        }
     } else {
         for entry in entries {
             let mut appearances = 0;
@@ -53,6 +55,16 @@ struct Entry {
     title: String,
     username: String,
     pass: String,
+}
+
+impl Clone for Entry {
+    fn clone(&self) -> Entry {
+        Entry {
+            title: self.title.clone(),
+            username: self.username.clone(),
+            pass: self.pass.clone(),
+        }
+    }
 }
 
 fn get_entries_from_keepass_db(file_path: &str) -> Vec<Entry> {
@@ -123,6 +135,52 @@ fn _read_hash_file(passwords_file_path: &str) -> Vec<String> {
     let hashes: Vec<String> = read_by_line_simple(passwords_file_path).unwrap();
     hashes
 }
+
+fn chug_through(passwords_file_path: &str, entries: Vec<Entry>) -> io::Result<Vec<Entry>> {
+    let mut this_chunk = Vec::new();
+    let mut bad_entries: Vec<Entry> = Vec::new();
+
+    let f = match File::open(passwords_file_path.trim_matches(|c| c == '\'' || c == ' ')) {
+        Ok(res) => res,
+        Err(e) => return Err(e),
+    };
+    let file = BufReader::new(&f);
+    for line in file.lines() {
+        this_chunk.push(line.unwrap());
+        if this_chunk.len() > 1000000 {
+            match check_this_chunk(&entries, &this_chunk) {
+                Ok(mut vec_of_bad_entries) => bad_entries.append(&mut vec_of_bad_entries),
+                Err(_e) => eprintln!("found no bad entries in this chunk"),
+            }
+            println!("about to clear this chunk of 1 million");
+            this_chunk.clear();
+        }
+    }
+    Ok(bad_entries)
+}
+
+fn check_this_chunk(entries: &Vec<Entry>, chunk: &Vec<String>) -> io::Result<Vec<Entry>> {
+    let mut bad_entries = Vec::new();
+
+    for line in chunk {
+        let this_hash = split_and_vectorize(&line, ":")[0];
+        // let (prefix, suffix) = (&digest[..5], &digest[5..]);
+
+        for entry in entries {
+            // not sure if I need to borrow here
+            let digest = sha1::Sha1::from(&entry.pass)
+                .digest()
+                .to_string()
+                .to_uppercase();
+            if this_hash.to_uppercase() == digest {
+                println!("found a bad entry: {:?}", entry);
+                bad_entries.push(entry.clone());
+            }
+        }
+    }
+    Ok(bad_entries)
+}
+
 fn evaluate_password_offline(entries: Vec<Entry>, hashes: Vec<String>) {
     for line in hashes {
         let this_hash = split_and_vectorize(&line, ":")[0];
