@@ -16,7 +16,7 @@ fn main() {
     println!("  2. Check ONLINE : Send the first 5 characters of your passwords' hashes over the internet to HaveIBeenPwned?");
     let choice: u32 = ensure("Please try again.").unwrap();
 
-    let passwords_file = if choice == 1 {
+    let passwords_file_path = if choice == 1 {
         println!("Enter file path of hashed password to check against");
         gets().unwrap()
     } else {
@@ -30,19 +30,20 @@ fn main() {
     }
     let entries = get_entries_from_keepass_db(&keepass_db_file_path);
 
-    for entry in entries {
-        let mut appearances = 0;
-        if choice == 2 {
+    if choice == 1 && !passwords_file_path.is_empty() {
+        let hashes: Vec<String> = read_by_line_simple(&passwords_file_path).unwrap();
+        evaluate_password_offline(entries, hashes);
+    } else {
+        for entry in entries {
+            let mut appearances = 0;
             appearances = check_password_online(&entry.pass);
-        } else if passwords_file.is_empty() {
-            check_password_offline(&entry.pass, &passwords_file);
-        }
 
-        if appearances > 0 {
-            println!(
-                "Oh no! I found your password for {} on {} {} times before",
-                entry.username, entry.title, appearances
-            );
+            if appearances > 0 {
+                println!(
+                    "Oh no! I found your password for {} on {} {} times before",
+                    entry.username, entry.title, appearances
+                );
+            }
         }
     }
 }
@@ -71,7 +72,7 @@ fn get_entries_from_keepass_db(file_path: &str) -> Vec<Entry> {
         Err(e) => panic!("Error: {}", e),
     };
 
-    println!("Checking your passwords...");
+    println!("Reading your KeePass database...");
     // Iterate over all Groups and Nodes
     for node in &db.root {
         match node {
@@ -118,19 +119,32 @@ fn check_password_online(pass: &str) -> usize {
     0
 }
 
-fn check_password_offline(pass: &str, passwords_file_path: &str) {
-    println!("Can't check passwords offline yet");
-    // let digest = sha1::Sha1::from(pass).digest().to_string().to_uppercase();
-    // let hashes: Vec<String> = read_by_line(passwords_file_path).unwrap();
-    // let mut number_of_matches: usize = 0;
-    // for this_hash in hashes {
-    //     println!("this hash is {}", this_hash);
-    //     if this_hash.to_uppercase() == digest {
-    //         number_of_matches = number_of_matches + 1;
-    //     }
-    // }
-    // number_of_matches
+fn _read_hash_file(passwords_file_path: &str) -> Vec<String> {
+    let hashes: Vec<String> = read_by_line_simple(passwords_file_path).unwrap();
+    hashes
 }
+fn evaluate_password_offline(entries: Vec<Entry>, hashes: Vec<String>) {
+    for line in hashes {
+        let this_hash = split_and_vectorize(&line, ":")[0];
+
+        for entry in &entries {
+            // not sure if I need to borrow here
+            let digest = sha1::Sha1::from(&entry.pass)
+                .digest()
+                .to_string()
+                .to_uppercase();
+            if this_hash.to_uppercase() == digest {
+                let this_number_of_matches =
+                    split_and_vectorize(&line, ":")[1].parse::<usize>().unwrap();
+                println!(
+                    "found {} appearances of {}",
+                    this_number_of_matches, entry.pass
+                );
+            }
+        }
+    }
+}
+
 fn gets() -> io::Result<String> {
     let mut input = String::new();
     match io::stdin().read_line(&mut input) {
@@ -160,7 +174,7 @@ fn split_and_vectorize<'a>(string_to_split: &'a str, splitter: &str) -> Vec<&'a 
     split.collect::<Vec<&str>>()
 }
 
-fn read_by_line<T: FromStr>(file_path: &str) -> io::Result<Vec<T>> {
+fn _read_by_line<T: FromStr>(file_path: &str) -> io::Result<Vec<T>> {
     let mut vec = Vec::new();
     let f = match File::open(file_path.trim_matches(|c| c == '\'' || c == ' ')) {
         Ok(res) => res,
@@ -168,6 +182,7 @@ fn read_by_line<T: FromStr>(file_path: &str) -> io::Result<Vec<T>> {
     };
     let file = BufReader::new(&f);
     for line in file.lines() {
+        // println!("Reading line {:?}", line);
         match line?.parse() {
             Ok(l) => vec.push(l),
             Err(_e) => {
@@ -175,6 +190,26 @@ fn read_by_line<T: FromStr>(file_path: &str) -> io::Result<Vec<T>> {
                 continue;
             }
         }
+    }
+    Ok(vec)
+}
+
+fn read_by_line_simple(file_path: &str) -> io::Result<Vec<String>> {
+    let mut vec = Vec::new();
+    let f = match File::open(file_path.trim_matches(|c| c == '\'' || c == ' ')) {
+        Ok(res) => res,
+        Err(e) => return Err(e),
+    };
+    let file = BufReader::new(&f);
+    let mut line_number = 0;
+    for line in file.lines() {
+        // println!("Reading line {:?}", line);
+        line_number = line_number + 1;
+        println!("Reading line #{:?}", line_number);
+        vec.push(line.unwrap());
+        // if line_number > 1000000 {
+        //     break;
+        // }
     }
     Ok(vec)
 }
