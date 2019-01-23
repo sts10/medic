@@ -13,11 +13,13 @@ use std::str::FromStr;
 fn main() {
     println!("To check your KeePass database's passwords, do you want to:");
     println!("  1. Check OFFLINE: Give me a database of SHA-1 hashed passwords?");
-    println!("  2. Check ONLINE : Send the first 5 characters of your passwords' hashes over the internet to HaveIBeenPwned?");
+    println!("  2. Check ONLINE : I will hash your passwords and send the first 5 characters of each hash over the internet to HaveIBeenPwned, in order to check if they've been breached.");
     let choice: u32 = ensure("Please try again.").unwrap();
 
     let passwords_file_path = if choice == 1 {
-        println!("Enter file path of hashed passwords to check against. Download one here: https://haveibeenpwned.com/Passwords");
+        println!("Enter file path of hashed passwords to check against.");
+        println!("To download a copy of very large list of password hashes from HaveIBeenPwned, go to: https://haveibeenpwned.com/Passwords");
+        println!("Choose the SHA-1 version, ordered by prevalence");
         gets().unwrap()
     } else {
         "".to_string()
@@ -30,7 +32,27 @@ fn main() {
     }
     let entries = get_entries_from_keepass_db(&keepass_db_file_path);
 
-    if choice == 1 && !passwords_file_path.is_empty() {
+    if choice == 2 {
+        // Confirm that user for sure wants to check online
+        println!("\n\nHeads up! I'll be sending the first 5 characters of the hashes of your passwords over the internet to HaveIBeenPwned. \nType allow to allow this");
+        if gets().unwrap() == "allow" {
+            println!("Cool, I'll check your KeePass passwords over the internet now...\n\n");
+            // check all entries online
+            for entry in entries {
+                let appearances = check_password_online(&entry.pass);
+
+                if appearances > 0 {
+                    println!(
+                        "Oh no! I found your password for {} on {} {} times before",
+                        entry.username, entry.title, appearances
+                    );
+                }
+            }
+        } else {
+            println!("Ok no worries, I'll just quit.");
+            return;
+        }
+    } else if choice == 1 && !passwords_file_path.is_empty() {
         let breached_entries = check_database_offline(&passwords_file_path, entries).unwrap();
         for breached_entry in breached_entries {
             println!(
@@ -39,16 +61,8 @@ fn main() {
             );
         }
     } else {
-        for entry in entries {
-            let appearances = check_password_online(&entry.pass);
-
-            if appearances > 0 {
-                println!(
-                    "Oh no! I found your password for {} on {} {} times before",
-                    entry.username, entry.title, appearances
-                );
-            }
-        }
+        println!("I didn't recognize that choice.");
+        return;
     }
 }
 

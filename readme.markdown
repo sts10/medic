@@ -14,7 +14,7 @@ However, once I successfully download that password list, which anyone can do [h
 
 1. [Install Rust](https://www.rust-lang.org/tools/install) if you haven't already
 2. Clone down the repo
-3. Once this tool works offline, you'll need to [download the Pwned Passwords list](https://haveibeenpwned.com/Passwords), ideally via torrent.
+3. Once this tool works offline, you'll need to [download the Pwned Passwords list](https://haveibeenpwned.com/Passwords), ideally via torrent. Choose the SHA-1 version, the one ordered by prevalence.
 4. The torrent downloads a `.7z` compressed file. Double click it to extract it to a ~22 GB text file. That's what this program will need to work with.
 
 ### Running the tool
