@@ -136,11 +136,6 @@ fn check_password_online(pass: &str) -> usize {
     0
 }
 
-fn _read_hash_file(passwords_file_path: &str) -> Vec<String> {
-    let hashes: Vec<String> = read_by_line_simple(passwords_file_path).unwrap();
-    hashes
-}
-
 fn chug_through(passwords_file_path: &str, entries: Vec<Entry>) -> io::Result<Vec<Entry>> {
     let mut this_chunk = Vec::new();
     let mut bad_entries: Vec<Entry> = Vec::new();
@@ -153,12 +148,12 @@ fn chug_through(passwords_file_path: &str, entries: Vec<Entry>) -> io::Result<Ve
     let file = BufReader::new(&f);
     for line in file.lines() {
         this_chunk.push(line.unwrap());
-        if this_chunk.len() > 1000000 {
+        if this_chunk.len() > 1_000_000 {
             match check_this_chunk(&entries, &this_chunk) {
                 Ok(mut vec_of_bad_entries) => bad_entries.append(&mut vec_of_bad_entries),
                 Err(_e) => eprintln!("found no bad entries in this chunk"),
             }
-            number_of_hashes_checked = number_of_hashes_checked + 1000000;
+            number_of_hashes_checked += 1_000_000;
             println!("I've checked {} hashes", number_of_hashes_checked);
             this_chunk.clear();
         }
@@ -166,7 +161,7 @@ fn chug_through(passwords_file_path: &str, entries: Vec<Entry>) -> io::Result<Ve
     Ok(bad_entries)
 }
 
-fn check_this_chunk(entries: &Vec<Entry>, chunk: &Vec<String>) -> io::Result<Vec<Entry>> {
+fn check_this_chunk(entries: &[Entry], chunk: &[String]) -> io::Result<Vec<Entry>> {
     let mut bad_entries = Vec::new();
 
     for line in chunk {
@@ -181,28 +176,6 @@ fn check_this_chunk(entries: &Vec<Entry>, chunk: &Vec<String>) -> io::Result<Vec
         }
     }
     Ok(bad_entries)
-}
-
-fn evaluate_password_offline(entries: Vec<Entry>, hashes: Vec<String>) {
-    for line in hashes {
-        let this_hash = split_and_vectorize(&line, ":")[0];
-
-        for entry in &entries {
-            // not sure if I need to borrow here
-            let digest = sha1::Sha1::from(&entry.pass)
-                .digest()
-                .to_string()
-                .to_uppercase();
-            if this_hash.to_uppercase() == digest {
-                let this_number_of_matches =
-                    split_and_vectorize(&line, ":")[1].parse::<usize>().unwrap();
-                println!(
-                    "found {} appearances of {}",
-                    this_number_of_matches, entry.pass
-                );
-            }
-        }
-    }
 }
 
 fn gets() -> io::Result<String> {
@@ -232,44 +205,4 @@ fn ensure<T: FromStr>(try_again: &str) -> io::Result<T> {
 fn split_and_vectorize<'a>(string_to_split: &'a str, splitter: &str) -> Vec<&'a str> {
     let split = string_to_split.split(splitter);
     split.collect::<Vec<&str>>()
-}
-
-fn _read_by_line<T: FromStr>(file_path: &str) -> io::Result<Vec<T>> {
-    let mut vec = Vec::new();
-    let f = match File::open(file_path.trim_matches(|c| c == '\'' || c == ' ')) {
-        Ok(res) => res,
-        Err(e) => return Err(e),
-    };
-    let file = BufReader::new(&f);
-    for line in file.lines() {
-        // println!("Reading line {:?}", line);
-        match line?.parse() {
-            Ok(l) => vec.push(l),
-            Err(_e) => {
-                eprintln!("Error");
-                continue;
-            }
-        }
-    }
-    Ok(vec)
-}
-
-fn read_by_line_simple(file_path: &str) -> io::Result<Vec<String>> {
-    let mut vec = Vec::new();
-    let f = match File::open(file_path.trim_matches(|c| c == '\'' || c == ' ')) {
-        Ok(res) => res,
-        Err(e) => return Err(e),
-    };
-    let file = BufReader::new(&f);
-    let mut line_number = 0;
-    for line in file.lines() {
-        // println!("Reading line {:?}", line);
-        line_number = line_number + 1;
-        println!("Reading line #{:?}", line_number);
-        vec.push(line.unwrap());
-        // if line_number > 1000000 {
-        //     break;
-        // }
-    }
-    Ok(vec)
 }
