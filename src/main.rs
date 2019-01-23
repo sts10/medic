@@ -37,8 +37,7 @@ fn main() {
         }
     } else {
         for entry in entries {
-            let mut appearances = 0;
-            appearances = check_password_online(&entry.pass);
+            let appearances = check_password_online(&entry.pass);
 
             if appearances > 0 {
                 println!(
