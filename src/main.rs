@@ -246,7 +246,7 @@ fn ensure<T: FromStr>(try_again: &str) -> io::Result<T> {
 }
 
 #[test]
-fn test_online_check() {
+fn can_check_online() {
     let keepass_db_file_path = "test-files/test_db.kdbx".to_string();
     let test_db_pass = "password".to_string();
     let entries = get_entries_from_keepass_db(&keepass_db_file_path, test_db_pass);
@@ -258,7 +258,7 @@ fn test_online_check() {
 // you're going to want to run this test by running `cargo test --release`, else it's going to take
 // a real long time
 #[test]
-fn test_offline_check() {
+fn can_check_offline() {
     let keepass_db_file_path = "test-files/test_db.kdbx".to_string();
     let test_db_pass = "password".to_string();
     let passwords_file_path =
