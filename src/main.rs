@@ -12,15 +12,17 @@ use std::str::FromStr;
 
 fn main() {
     println!("To check your KeePass database's passwords, do you want to:");
-    println!("  1. Check OFFLINE: Give me a database of SHA-1 hashed passwords?");
-    println!("  2. Check ONLINE : I will hash your passwords and send the first 5 characters of each hash over the internet to HaveIBeenPwned, in order to check if they've been breached.");
+    println!("  1. Check ONLINE : I will hash your passwords and send the first 5 characters of each hash over the internet to HaveIBeenPwned, in order to check if they've been breached.");
+    println!("  2. Check OFFLINE: Give me a database of SHA-1 hashed passwords?");
     let choice: u32 = ensure("Please try again.").unwrap();
 
-    let passwords_file_path = if choice == 1 {
-        println!("Enter file path of hashed passwords to check against.\n");
+    let passwords_file_path = if choice == 2 {
+        println!(
+            "I need a text file of SHA-1 hashes of passwords to check your password offline.\n"
+        );
         println!("To download a copy of very large list of password hashes from HaveIBeenPwned, go to: https://haveibeenpwned.com/Passwords");
         println!("Choose the SHA-1 version, ordered by prevalence. Then extract/unzip it, revelaing an even larger txt file.\n");
-        println!("Enter file path of that file here.");
+        println!("Enter file path of SHA-1 hashes to check:");
 
         gets().unwrap()
     } else {
@@ -32,36 +34,18 @@ fn main() {
     if keepass_db_file_path == "t" {
         keepass_db_file_path = "test-files/test_db.kdbx".to_string();
     }
-    let entries = get_entries_from_keepass_db(&keepass_db_file_path);
 
-    if choice == 2 {
-        // Confirm that user for sure wants to check online
-        println!("\n\nHeads up! I'll be sending the first 5 characters of the hashes of your passwords over the internet to HaveIBeenPwned. \nType allow to allow this");
-        if gets().unwrap() == "allow" {
-            println!("Cool, I'll check your KeePass passwords over the internet now...\n\n");
-            // check all entries online
-            for entry in entries {
-                let appearances = check_password_online(&entry.pass);
+    let db_pass =
+        rpassword::read_password_from_tty(Some("Enter the password to your KeePass database: "))
+            .unwrap();
+    let entries = get_entries_from_keepass_db(&keepass_db_file_path, db_pass);
 
-                if appearances > 0 {
-                    println!(
-                        "Oh no! I found your password for {} on {} {} times before",
-                        entry.username, entry.title, appearances
-                    );
-                }
-            }
-        } else {
-            println!("Ok no worries, I'll just quit.");
-            return;
-        }
-    } else if choice == 1 && !passwords_file_path.is_empty() {
+    if choice == 1 && confirm_online_check() {
+        let breached_entries = check_database_online(&entries);
+        present_breached_entries(&breached_entries);
+    } else if choice == 2 && !passwords_file_path.is_empty() {
         let breached_entries = check_database_offline(&passwords_file_path, entries).unwrap();
-        for breached_entry in breached_entries {
-            println!(
-                "Oh no! I found your password for {} on {}",
-                breached_entry.username, breached_entry.title
-            );
-        }
+        present_breached_entries(&breached_entries);
     } else {
         println!("I didn't recognize that choice.");
         return;
@@ -87,12 +71,12 @@ impl Clone for Entry {
     }
 }
 
-fn get_entries_from_keepass_db(file_path: &str) -> Vec<Entry> {
+fn get_entries_from_keepass_db(file_path: &str, db_pass: String) -> Vec<Entry> {
     let mut entries: Vec<Entry> = vec![];
 
-    let db_pass =
-        rpassword::read_password_from_tty(Some("Enter the password to your KeePass database: "))
-            .unwrap();
+    // clean up user-inputted file path to standardize across operating systems/terminal emulators
+    let file_path = file_path.trim_matches(|c| c == '\'' || c == ' ');
+
     // Open KeePass database
     println!("Attempting to unlock your KeePass database...");
     let db = match File::open(std::path::Path::new(file_path))
@@ -126,6 +110,37 @@ fn get_entries_from_keepass_db(file_path: &str) -> Vec<Entry> {
         }
     }
     entries
+}
+
+fn present_breached_entries(breached_entries: &[Entry]) {
+    for breached_entry in breached_entries {
+        println!(
+            "Oh no! I found your password for {} on {}",
+            breached_entry.username, breached_entry.title
+        );
+    }
+}
+
+fn check_database_online(entries: &[Entry]) -> Vec<Entry> {
+    let mut breached_entries: Vec<Entry> = Vec::new();
+    for entry in entries {
+        let appearances = check_password_online(&entry.pass);
+        if appearances > 0 {
+            breached_entries.push(entry.clone());
+        }
+    }
+    breached_entries
+}
+
+fn confirm_online_check() -> bool {
+    // Confirm that user for sure wants to check online
+    println!("\n\nHeads up! I'll be sending the first 5 characters of the hashes of your passwords over the internet to HaveIBeenPwned. \nType allow to allow this");
+    if gets().unwrap() == "allow" {
+        println!("Cool, I'll check your KeePass passwords over the internet now...\n");
+        true
+    } else {
+        false
+    }
 }
 
 fn check_password_online(pass: &str) -> usize {
@@ -228,4 +243,29 @@ fn ensure<T: FromStr>(try_again: &str) -> io::Result<T> {
             }
         };
     }
+}
+
+#[test]
+fn test_online_check() {
+    let keepass_db_file_path = "test-files/test_db.kdbx".to_string();
+    let test_db_pass = "password".to_string();
+    let entries = get_entries_from_keepass_db(&keepass_db_file_path, test_db_pass);
+
+    let breached_entries = check_database_online(&entries);
+    assert_eq!(breached_entries.len(), 3);
+}
+
+// you're going to want to run this test by running `cargo test --release`, else it's going to take
+// a real long time
+#[test]
+fn test_offline_check() {
+    let keepass_db_file_path = "test-files/test_db.kdbx".to_string();
+    let test_db_pass = "password".to_string();
+    let passwords_file_path =
+        "/home/sschlinkert/code/hibp/pwned-passwords-sha1-ordered-by-count-v4.txt".to_string();
+
+    let entries = get_entries_from_keepass_db(&keepass_db_file_path, test_db_pass);
+
+    let breached_entries = check_database_offline(&passwords_file_path, entries).unwrap();
+    assert_eq!(breached_entries.len(), 3);
 }
