@@ -7,6 +7,7 @@ extern crate zxcvbn;
 
 use indicatif::{ProgressBar, ProgressStyle};
 use keepass::{Database, Node, OpenDBError};
+use std::collections::HashMap;
 use std::fs::File;
 use std::io;
 use std::io::BufRead;
@@ -60,7 +61,7 @@ fn main() {
     } else if choice == 4 {
         let duplicated_entries = check_database_for_duplicates(&entries).unwrap();
         if duplicated_entries.len() > 0 {
-            present_duplicated_entries(&duplicated_entries);
+            present_duplicated_entries(duplicated_entries);
         } else {
             println!("No duplicated passwords found. Awesome!");
         }
@@ -264,36 +265,43 @@ fn check_this_chunk(entries: &[Entry], chunk: &[String]) -> io::Result<Vec<Entry
     Ok(breached_entries)
 }
 
-fn check_database_for_duplicates(entries: &[Entry]) -> io::Result<Vec<(Entry, Entry)>> {
-    let mut duplicated_entries: Vec<(Entry, Entry)> = Vec::new();
+fn check_database_for_duplicates(entries: &[Entry]) -> io::Result<HashMap<String, Vec<Entry>>> {
+    let mut digest_map: HashMap<String, Vec<Entry>> = HashMap::new();
+    for entry in entries {
+        digest_map
+            .entry(entry.clone().digest)
+            .and_modify(|vec| vec.push(entry.clone()))
+            .or_insert([entry.clone()].to_vec());
+    }
 
-    // loop through all entries, and for each check for all other entries for same password
-    for entry_to_check in entries {
-        for entry_to_check_against in entries {
-            if !(entry_to_check.username == entry_to_check_against.username
-                && entry_to_check.title == entry_to_check_against.title)
-            {
-                if &entry_to_check_against.digest == &entry_to_check.digest.to_string() {
-                    duplicated_entries
-                        .push((entry_to_check.clone(), entry_to_check_against.clone()));
-                }
+    // let mut duplicated_entries: Vec<(Entry, Entry)> = Vec::new();
+
+    // for entry_to_check in entries {
+    //     for entry_to_check_against in entries {
+    //         if !(entry_to_check.username == entry_to_check_against.username
+    //             && entry_to_check.title == entry_to_check_against.title)
+    //         {
+    //             if &entry_to_check_against.digest == &entry_to_check.digest.to_string() {
+    //                 duplicated_entries
+    //                     .push((entry_to_check.clone(), entry_to_check_against.clone()));
+    //             }
+    //         }
+    //     }
+    // }
+    Ok(digest_map)
+}
+
+fn present_duplicated_entries(duplicated_entries: HashMap<String, Vec<Entry>>) {
+    println!("\nThese entries have the same password:\n");
+    for groups in duplicated_entries.values() {
+        if groups.len() > 1 {
+            println!("The following entries share a password:");
+            for entry in groups {
+                println!("{} for {}", entry.username, entry.title);
             }
         }
     }
-    Ok(duplicated_entries)
-}
 
-fn present_duplicated_entries(duplicated_entries: &[(Entry, Entry)]) {
-    println!("\nThese entries have the same password:\n");
-    for pair_of_entries in duplicated_entries {
-        println!(
-            "   - {} on {} AND {} on {}",
-            pair_of_entries.0.username,
-            pair_of_entries.0.title,
-            pair_of_entries.1.username,
-            pair_of_entries.1.title,
-        );
-    }
     println!("\nPassword re-use is bad. Change passwords until you have no duplicates");
 }
 
