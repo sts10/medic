@@ -204,6 +204,7 @@ fn check_database_offline(
         Err(e) => return Err(e),
     };
 
+    // times via `cargo test --release can_check_offline --no-run && time cargo test --release can_check_offline -- --nocapture`
     // let chunk_size = 1_000_000; // real 1m24.709s
     // let chunk_size = 20_000_000; // real 1m13.159s
     let chunk_size = 10_000_000; // real 1m14.613s
