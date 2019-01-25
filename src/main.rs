@@ -1,8 +1,10 @@
+extern crate indicatif;
 extern crate keepass;
 extern crate reqwest;
 extern crate rpassword;
 extern crate sha1;
 
+use indicatif::{ProgressBar, ProgressStyle};
 use keepass::{Database, Node, OpenDBError};
 use std::fs::File;
 use std::io;
@@ -109,6 +111,7 @@ fn get_entries_from_keepass_db(file_path: &str, db_pass: String) -> Vec<Entry> {
             }
         }
     }
+    println!("Successfully read KeePass database!");
     entries
 }
 
@@ -182,6 +185,17 @@ fn check_database_offline(
         Ok(res) => res,
         Err(e) => return Err(e),
     };
+
+    // println!("attempting to count number of lines");
+    // let line_count = 550_000_000 as u64;
+    // println!("Read line count as {}", line_count);
+
+    let pb = ProgressBar::new(550 as u64);
+    pb.set_style(
+        ProgressStyle::default_bar().template("{spinner} [{elapsed_precise}] [{bar:40}] ({eta})"),
+        // .progress_chars("#>-"),
+    );
+
     let file = BufReader::new(&f);
     for line in file.lines() {
         this_chunk.push(line.unwrap());
@@ -193,10 +207,12 @@ fn check_database_offline(
                 Err(_e) => eprintln!("found no breached entries in this chunk"),
             }
             number_of_hashes_checked += 1_000_000;
-            println!("I've checked {} hashes", number_of_hashes_checked);
+            // println!("I've checked {} hashes", number_of_hashes_checked);
+            pb.inc(1);
             this_chunk.clear();
         }
     }
+    pb.finish_with_message("Done.");
     Ok(breached_entries)
 }
 
@@ -204,15 +220,14 @@ fn check_this_chunk(entries: &[Entry], chunk: &[String]) -> io::Result<Vec<Entry
     let mut breached_entries = Vec::new();
 
     for line in chunk {
-        // let this_hash = split_and_vectorize(&line, ":")[0];
         let this_hash = &line[..40];
 
         for entry in entries {
             if this_hash == entry.digest {
-                println!(
-                    "Oh no! I found your password for {} on {}",
-                    entry.username, entry.title
-                );
+                // println!(
+                //     "Oh no! I found your password for {} on {}",
+                //     entry.username, entry.title
+                // );
                 breached_entries.push(entry.clone());
             }
         }
