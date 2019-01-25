@@ -46,7 +46,7 @@ fn main() {
         let breached_entries = check_database_online(&entries);
         present_breached_entries(&breached_entries);
     } else if choice == 2 && !passwords_file_path.is_empty() {
-        let breached_entries = check_database_offline(&passwords_file_path, entries).unwrap();
+        let breached_entries = check_database_offline(&passwords_file_path, entries, true).unwrap();
         present_breached_entries(&breached_entries);
     } else {
         println!("I didn't recognize that choice.");
@@ -176,6 +176,7 @@ fn check_password_online(pass: &str) -> usize {
 fn check_database_offline(
     passwords_file_path: &str,
     entries: Vec<Entry>,
+    progress_bar: bool,
 ) -> io::Result<Vec<Entry>> {
     let mut this_chunk = Vec::new();
     let mut breached_entries: Vec<Entry> = Vec::new();
@@ -191,10 +192,13 @@ fn check_database_offline(
     // println!("Read line count as {}", line_count);
 
     let pb = ProgressBar::new(550 as u64);
-    pb.set_style(
-        ProgressStyle::default_bar().template("{spinner} [{elapsed_precise}] [{bar:40}] ({eta})"),
-        // .progress_chars("#>-"),
-    );
+    if progress_bar {
+        pb.set_style(
+            ProgressStyle::default_bar()
+                .template("{spinner} [{elapsed_precise}] [{bar:40}] ({eta})"),
+            // .progress_chars("#>-"),
+        );
+    }
 
     let file = BufReader::new(&f);
     for line in file.lines() {
@@ -207,12 +211,15 @@ fn check_database_offline(
                 Err(_e) => eprintln!("found no breached entries in this chunk"),
             }
             number_of_hashes_checked += 1_000_000;
-            // println!("I've checked {} hashes", number_of_hashes_checked);
-            pb.inc(1);
+            if progress_bar {
+                pb.inc(1);
+            }
             this_chunk.clear();
         }
     }
-    pb.finish_with_message("Done.");
+    if progress_bar {
+        pb.finish_with_message("Done.");
+    }
     Ok(breached_entries)
 }
 
@@ -281,6 +288,6 @@ fn can_check_offline() {
 
     let entries = get_entries_from_keepass_db(&keepass_db_file_path, test_db_pass);
 
-    let breached_entries = check_database_offline(&passwords_file_path, entries).unwrap();
+    let breached_entries = check_database_offline(&passwords_file_path, entries, false).unwrap();
     assert_eq!(breached_entries.len(), 3);
 }
