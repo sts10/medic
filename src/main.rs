@@ -59,12 +59,8 @@ fn main() {
     } else if choice == 3 {
         check_for_and_display_weak_passwords(&entries);
     } else if choice == 4 {
-        let duplicated_entries = check_database_for_duplicates(&entries).unwrap();
-        if duplicated_entries.len() > 0 {
-            present_duplicated_entries(duplicated_entries);
-        } else {
-            println!("No duplicated passwords found. Awesome!");
-        }
+        let digest_map = make_digest_map(&entries).unwrap();
+        present_duplicated_entries(digest_map);
     } else {
         println!("I didn't recognize that choice.");
         return;
@@ -265,7 +261,7 @@ fn check_this_chunk(entries: &[Entry], chunk: &[String]) -> io::Result<Vec<Entry
     Ok(breached_entries)
 }
 
-fn check_database_for_duplicates(entries: &[Entry]) -> io::Result<HashMap<String, Vec<Entry>>> {
+fn make_digest_map(entries: &[Entry]) -> io::Result<HashMap<String, Vec<Entry>>> {
     let mut digest_map: HashMap<String, Vec<Entry>> = HashMap::new();
     for entry in entries {
         digest_map
@@ -274,35 +270,26 @@ fn check_database_for_duplicates(entries: &[Entry]) -> io::Result<HashMap<String
             .or_insert([entry.clone()].to_vec());
     }
 
-    // let mut duplicated_entries: Vec<(Entry, Entry)> = Vec::new();
-
-    // for entry_to_check in entries {
-    //     for entry_to_check_against in entries {
-    //         if !(entry_to_check.username == entry_to_check_against.username
-    //             && entry_to_check.title == entry_to_check_against.title)
-    //         {
-    //             if &entry_to_check_against.digest == &entry_to_check.digest.to_string() {
-    //                 duplicated_entries
-    //                     .push((entry_to_check.clone(), entry_to_check_against.clone()));
-    //             }
-    //         }
-    //     }
-    // }
     Ok(digest_map)
 }
 
-fn present_duplicated_entries(duplicated_entries: HashMap<String, Vec<Entry>>) {
-    println!("\nThese entries have the same password:\n");
-    for groups in duplicated_entries.values() {
+fn present_duplicated_entries(digest_map: HashMap<String, Vec<Entry>>) {
+    let mut has_duplicated_entries = false;
+    for groups in digest_map.values() {
         if groups.len() > 1 {
-            println!("The following entries share a password:");
+            println!("The following entries have the same password:\n");
             for entry in groups {
                 println!("{} for {}", entry.username, entry.title);
             }
+            has_duplicated_entries = true;
         }
     }
 
-    println!("\nPassword re-use is bad. Change passwords until you have no duplicates");
+    if has_duplicated_entries {
+        println!("\nPassword re-use is bad. Change passwords until you have no duplicates.");
+    } else {
+        println!("\nGood job -- no password reuse detected!");
+    }
 }
 
 fn check_for_and_display_weak_passwords(entries: &[Entry]) {
@@ -386,12 +373,21 @@ fn can_check_offline() {
 }
 
 #[test]
-fn can_check_for_duplicated_entries() {
+fn can_make_a_map_digest() {
     let keepass_db_file_path = "test-files/test_db.kdbx".to_string();
     let test_db_pass = "password".to_string();
 
     let entries = get_entries_from_keepass_db(&keepass_db_file_path, test_db_pass);
+    let digest_map = make_digest_map(&entries).unwrap();
 
-    let duplicated_entries = check_database_for_duplicates(&entries).unwrap();
-    assert_eq!(duplicated_entries.len(), 2);
+    let mut number_of_entries_with_duplicate_passwords = 0;
+    for groups in digest_map.values() {
+        if groups.len() > 1 {
+            for _entry in groups {
+                number_of_entries_with_duplicate_passwords += 1;
+            }
+        }
+    }
+
+    assert_eq!(number_of_entries_with_duplicate_passwords, 2);
 }
