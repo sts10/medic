@@ -17,6 +17,7 @@ fn main() {
     println!("To check your KeePass database's passwords, do you want to:\n");
     println!("==> 1. Check ONLINE : I will hash your passwords and send the first 5 characters of each hash over the internet to HaveIBeenPwned, in order to check if they've been breached.");
     println!("==> 2. Check OFFLINE: Give me a database of SHA-1 hashed passwords to check your KeePass database against");
+    println!("==> 3. Check for duplicate passwords (entirely offline)");
     println!();
     let choice: u32 = ensure("Please try again.").unwrap();
 
@@ -50,6 +51,13 @@ fn main() {
     } else if choice == 2 && !passwords_file_path.is_empty() {
         let breached_entries = check_database_offline(&passwords_file_path, entries, true).unwrap();
         present_breached_entries(&breached_entries);
+    } else if choice == 3 {
+        let duplicated_entries = check_database_for_duplicates(&entries).unwrap();
+        if duplicated_entries.len() > 0 {
+            present_duplicated_entries(&duplicated_entries);
+        } else {
+            println!("No duplicated passwords found. Awesome!");
+        }
     } else {
         println!("I didn't recognize that choice.");
         return;
@@ -248,6 +256,38 @@ fn check_this_chunk(entries: &[Entry], chunk: &[String]) -> io::Result<Vec<Entry
     Ok(breached_entries)
 }
 
+fn check_database_for_duplicates(entries: &[Entry]) -> io::Result<Vec<(Entry, Entry)>> {
+    let mut duplicated_entries: Vec<(Entry, Entry)> = Vec::new();
+
+    // loop through all entries, and for each check for all other entries for same password
+    for entry_to_check in entries {
+        for entry_to_check_against in entries {
+            if !(entry_to_check.username == entry_to_check_against.username
+                && entry_to_check.title == entry_to_check_against.title)
+            {
+                if &entry_to_check_against.digest == &entry_to_check.digest.to_string() {
+                    duplicated_entries
+                        .push((entry_to_check.clone(), entry_to_check_against.clone()));
+                }
+            }
+        }
+    }
+    Ok(duplicated_entries)
+}
+
+fn present_duplicated_entries(duplicated_entries: &[(Entry, Entry)]) {
+    println!("\nI found at least two entries with the same password:\n");
+    for pair_of_entries in duplicated_entries {
+        println!(
+            "  - {} on {} AND {} on {}",
+            pair_of_entries.0.username,
+            pair_of_entries.0.title,
+            pair_of_entries.1.username,
+            pair_of_entries.1.title,
+        );
+    }
+    println!("Password re-use is bad. Change passwords until you have no duplicates");
+}
 fn gets() -> io::Result<String> {
     let mut input = String::new();
     match io::stdin().read_line(&mut input) {
@@ -296,4 +336,15 @@ fn can_check_offline() {
 
     let breached_entries = check_database_offline(&passwords_file_path, entries, false).unwrap();
     assert_eq!(breached_entries.len(), 3);
+}
+
+#[test]
+fn can_check_for_duplicated_entries() {
+    let keepass_db_file_path = "test-files/test_db.kdbx".to_string();
+    let test_db_pass = "password".to_string();
+
+    let entries = get_entries_from_keepass_db(&keepass_db_file_path, test_db_pass);
+
+    let duplicated_entries = check_database_for_duplicates(&entries).unwrap();
+    assert_eq!(duplicated_entries.len(), 2);
 }
