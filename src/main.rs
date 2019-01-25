@@ -3,6 +3,7 @@ extern crate keepass;
 extern crate reqwest;
 extern crate rpassword;
 extern crate sha1;
+extern crate zxcvbn;
 
 use indicatif::{ProgressBar, ProgressStyle};
 use keepass::{Database, Node, OpenDBError};
@@ -11,13 +12,15 @@ use std::io;
 use std::io::BufRead;
 use std::io::BufReader;
 use std::str::FromStr;
+use zxcvbn::zxcvbn;
 
 fn main() {
     println!();
     println!("To check your KeePass database's passwords, do you want to:\n");
     println!("==> 1. Check ONLINE : I will hash your passwords and send the first 5 characters of each hash over the internet to HaveIBeenPwned, in order to check if they've been breached.");
     println!("==> 2. Check OFFLINE: Give me a database of SHA-1 hashed passwords to check your KeePass database against");
-    println!("==> 3. Check for duplicate passwords (entirely offline)");
+    println!("==> 3. Check for weak passwords");
+    println!("==> 4. Check for duplicate passwords (entirely offline)");
     println!();
     let choice: u32 = ensure("Please try again.").unwrap();
 
@@ -45,6 +48,7 @@ fn main() {
             .unwrap();
     let entries = get_entries_from_keepass_db(&keepass_db_file_path, db_pass);
 
+    println!("\n================= BEGIN REPORT ==================\n");
     if choice == 1 && confirm_online_check() {
         let breached_entries = check_database_online(&entries);
         present_breached_entries(&breached_entries);
@@ -52,6 +56,8 @@ fn main() {
         let breached_entries = check_database_offline(&passwords_file_path, entries, true).unwrap();
         present_breached_entries(&breached_entries);
     } else if choice == 3 {
+        check_for_and_display_weak_passwords(&entries);
+    } else if choice == 4 {
         let duplicated_entries = check_database_for_duplicates(&entries).unwrap();
         if duplicated_entries.len() > 0 {
             present_duplicated_entries(&duplicated_entries);
@@ -62,6 +68,7 @@ fn main() {
         println!("I didn't recognize that choice.");
         return;
     }
+    println!("\n================== END REPORT ==================\n ");
 }
 
 #[derive(Debug)]
@@ -276,18 +283,49 @@ fn check_database_for_duplicates(entries: &[Entry]) -> io::Result<Vec<(Entry, En
 }
 
 fn present_duplicated_entries(duplicated_entries: &[(Entry, Entry)]) {
-    println!("\nI found at least two entries with the same password:\n");
+    println!("\nThese entries have the same password:\n");
     for pair_of_entries in duplicated_entries {
         println!(
-            "  - {} on {} AND {} on {}",
+            "   - {} on {} AND {} on {}",
             pair_of_entries.0.username,
             pair_of_entries.0.title,
             pair_of_entries.1.username,
             pair_of_entries.1.title,
         );
     }
-    println!("Password re-use is bad. Change passwords until you have no duplicates");
+    println!("\nPassword re-use is bad. Change passwords until you have no duplicates");
 }
+
+fn check_for_and_display_weak_passwords(entries: &[Entry]) {
+    for entry in entries {
+        let estimate = zxcvbn(&entry.pass, &[&entry.title, &entry.username]).unwrap();
+        if estimate.score < 4 {
+            println!("--------------------------------");
+            println!(
+                "Your password for {} on {} is weak.",
+                entry.username, entry.title
+            );
+            give_feedback(estimate.feedback);
+        }
+    }
+}
+
+fn give_feedback(feedback: Option<zxcvbn::feedback::Feedback>) {
+    let spacer = "   ";
+    match feedback {
+        Some(feedback) => {
+            if let Some(warning) = feedback.warning {
+                println!("Warning: {}\n", warning);
+            }
+            println!("Suggestions:");
+            for suggestion in feedback.suggestions {
+                println!("{}- {}", spacer, suggestion)
+            }
+        }
+        None => println!("No suggestions."),
+    }
+}
+
 fn gets() -> io::Result<String> {
     let mut input = String::new();
     match io::stdin().read_line(&mut input) {
