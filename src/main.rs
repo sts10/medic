@@ -187,6 +187,10 @@ fn check_database_offline(
         Err(e) => return Err(e),
     };
 
+    // let chunk_size = 1_000_000; // real 1m24.709s
+    // let chunk_size = 20_000_000; // real 1m13.159s
+    let chunk_size = 10_000_000; // real 1m14.613s
+
     // println!("attempting to count number of lines");
     // let line_count = 550_000_000 as u64;
     // println!("Read line count as {}", line_count);
@@ -203,16 +207,16 @@ fn check_database_offline(
     let file = BufReader::new(&f);
     for line in file.lines() {
         this_chunk.push(line.unwrap());
-        if this_chunk.len() > 1_000_000 {
+        if this_chunk.len() > chunk_size {
             match check_this_chunk(&entries, &this_chunk) {
                 Ok(mut vec_of_breached_entries) => {
                     breached_entries.append(&mut vec_of_breached_entries)
                 }
                 Err(_e) => eprintln!("found no breached entries in this chunk"),
             }
-            number_of_hashes_checked += 1_000_000;
+            number_of_hashes_checked += chunk_size;
             if progress_bar {
-                pb.inc(1);
+                pb.inc((chunk_size / 100_000) as u64);
             }
             this_chunk.clear();
         }
