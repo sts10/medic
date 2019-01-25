@@ -13,9 +13,11 @@ use std::io::BufReader;
 use std::str::FromStr;
 
 fn main() {
-    println!("To check your KeePass database's passwords, do you want to:");
-    println!("  1. Check ONLINE : I will hash your passwords and send the first 5 characters of each hash over the internet to HaveIBeenPwned, in order to check if they've been breached.");
-    println!("  2. Check OFFLINE: Give me a database of SHA-1 hashed passwords to check your KeePass database against");
+    println!();
+    println!("To check your KeePass database's passwords, do you want to:\n");
+    println!("==> 1. Check ONLINE : I will hash your passwords and send the first 5 characters of each hash over the internet to HaveIBeenPwned, in order to check if they've been breached.");
+    println!("==> 2. Check OFFLINE: Give me a database of SHA-1 hashed passwords to check your KeePass database against");
+    println!();
     let choice: u32 = ensure("Please try again.").unwrap();
 
     let passwords_file_path = if choice == 2 {
@@ -180,7 +182,7 @@ fn check_database_offline(
 ) -> io::Result<Vec<Entry>> {
     let mut this_chunk = Vec::new();
     let mut breached_entries: Vec<Entry> = Vec::new();
-    let mut number_of_hashes_checked = 0;
+    // let mut number_of_hashes_checked: usize;
 
     let f = match File::open(passwords_file_path.trim_matches(|c| c == '\'' || c == ' ')) {
         Ok(res) => res,
@@ -214,7 +216,7 @@ fn check_database_offline(
                 }
                 Err(_e) => eprintln!("found no breached entries in this chunk"),
             }
-            number_of_hashes_checked += chunk_size;
+            // number_of_hashes_checked += chunk_size;
             if progress_bar {
                 pb.inc((chunk_size / 100_000) as u64);
             }
