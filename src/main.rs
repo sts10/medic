@@ -192,10 +192,10 @@ fn check_database_offline(
     let chunk_size = 10_000_000; // real 1m14.613s
 
     // println!("attempting to count number of lines");
-    // let line_count = 550_000_000 as u64;
+    let line_count = 550_000_000 as u64;
     // println!("Read line count as {}", line_count);
 
-    let pb = ProgressBar::new(550 as u64);
+    let pb = ProgressBar::new((line_count / 100_000) as u64);
     if progress_bar {
         pb.set_style(
             ProgressStyle::default_bar()
