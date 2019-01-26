@@ -14,12 +14,11 @@ use std::io::BufRead;
 use std::io::BufReader;
 // use std::mem;
 use std::env;
-use std::str::FromStr;
 use zxcvbn::zxcvbn;
 
 fn main() {
     let args: Vec<_> = env::args().collect();
-    let paranoid_mode: bool = args.len() > 1 && args[1].contains('p');
+    let paranoid_mode: bool = args.len() > 1 && args[1].contains("-p");
     if paranoid_mode {
         println!("\nStarting Medic in PARANOID mode...");
         println!("In Paranoid mode, Medic can only open KeePass databases if it CANNOT connect to the interent.");
@@ -47,6 +46,7 @@ fn main() {
         keepass_db_file_path = "test-files/test_db.kdbx".to_string();
     }
 
+    // not loving this rigamarole for paranoid mode...
     let entries: Option<Vec<Entry>> = if is_allowed_to_open_a_keepass_database(paranoid_mode) {
         let db_pass = rpassword::read_password_from_tty(Some(
             "Enter the password to your KeePass database: ",
@@ -383,23 +383,6 @@ fn gets() -> io::Result<String> {
         Err(error) => Err(error),
     }
 }
-fn ensure<T: FromStr>(try_again: &str) -> io::Result<T> {
-    loop {
-        let line = match gets() {
-            Ok(l) => l,
-            Err(e) => return Err(e),
-        };
-        match line.parse() {
-            Ok(res) => return Ok(res),
-            // otherwise, display inputted "try again" message
-            // and continue the loop
-            Err(_e) => {
-                eprintln!("{}", try_again);
-                continue;
-            }
-        };
-    }
-}
 
 #[test]
 fn can_check_online() {
@@ -417,8 +400,8 @@ fn can_check_online() {
 fn can_check_offline() {
     let keepass_db_file_path = "test-files/test_db.kdbx".to_string();
     let test_db_pass = "password".to_string();
-    let passwords_file_path =
-        "/home/sschlinkert/code/hibp/pwned-passwords-sha1-ordered-by-count-v4.txt".to_string();
+    let passwords_file_path = "../hibp/pwned-passwords-sha1-ordered-by-count-v4.txt".to_string();
+    // "/home/sschlinkert/code/hibp/pwned-passwords-sha1-ordered-by-count-v4.txt".to_string();
 
     let entries = get_entries_from_keepass_db(&keepass_db_file_path, test_db_pass);
 

@@ -23,15 +23,21 @@ However, once I successfully download that password list, which anyone can do [h
 2. Choose whether to check your KeePass database's passwords offline or online.
 3. Follow the subsequent instructions.
 
+### Paranoid mode
+
+If you are worried about this tool sending any information over the internet without your knowledge, you can run it in "Paranoid mode". 
+
+In "Paranoid mode", Medic can only open KeePass databases if your computer in **disconnect** from the internet. 
+
+To run Medic in Paranoid mode, run `cargo run --release -- -p`. You'll be presented with a more limited menu of options. Before making a menu choice, turn off your connection to the internet.
+
 ## To do
 
 1. Better error handling
 2. Write tests
 3. Test how it works with a KeePass database that uses a key file and/or Challenge+Accept
-4. Check for any repeated passwords
-5. Use [zxcvbn](https://github.com/shssoichiro/zxcvbn-rs) to check for password strength
-6. Use [zxcvbn](https://github.com/shssoichiro/zxcvbn-rs) to check for _similar_ passwords?
-7. Design a logo?!
+4. Offer an option to check for _similar_ passwords (maybe using [zxcvbn](https://github.com/shssoichiro/zxcvbn-rs)?)
+5. Design/commission a logo?!
 
 ## Reference
 
