@@ -47,6 +47,7 @@ To run Medic in Paranoid mode, run `cargo run --release -- -p`. You'll be presen
 
 ### Similar projects
 - [A KeePass extension for checking against HaveIBeenPwned](https://github.com/andrew-schofield/keepass2-haveibeenpwned)
+- [HIBPOfflineCheck](https://github.com/mihaifm/HIBPOfflineCheck) - A Keepass plugin that performs offline checks against the haveibeenpwned passwords file
 
 ### Useful projects in Rust 
 - [password-check](https://github.com/davidhewitt/password-check)

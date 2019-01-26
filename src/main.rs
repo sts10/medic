@@ -8,7 +8,7 @@ fn main() {
 
     let choice = get_menu_choice(paranoid_mode);
 
-    let passwords_file_path = if choice == 3 {
+    let passwords_file_path: Option<String> = if choice == 3 {
         println!(
             "I need a text file of SHA-1 hashes of passwords to check your password offline.\n"
         );
@@ -16,9 +16,9 @@ fn main() {
         println!("Choose the SHA-1 version, ordered by prevalence. Then extract/unzip it, revelaing an even larger txt file.\n");
         println!("Enter file path of SHA-1 hashes to check:");
 
-        gets().unwrap()
+        Some(gets().unwrap())
     } else {
-        "".to_string()
+        None
     };
 
     println!("\nEnter file path of your KeePass database file");
@@ -53,9 +53,14 @@ fn main() {
     } else if choice == 2 {
         let digest_map = make_digest_map(&entries).unwrap();
         present_duplicated_entries(digest_map);
-    } else if choice == 3 && !passwords_file_path.is_empty() {
-        let breached_entries = check_database_offline(&passwords_file_path, entries, true).unwrap();
-        present_breached_entries(&breached_entries);
+    } else if choice == 3 {
+        match passwords_file_path {
+            Some(file_path) => {
+                let breached_entries = check_database_offline(&file_path, entries, true).unwrap();
+                present_breached_entries(&breached_entries);
+            }
+            None => panic!("No passwords file found"),
+        }
     } else if choice == 4 && confirm_online_check() {
         let breached_entries = check_database_online(&entries);
         present_breached_entries(&breached_entries);
