@@ -14,22 +14,24 @@ However, once I successfully download that password list, which anyone can do [h
 
 1. [Install Rust](https://www.rust-lang.org/tools/install) if you haven't already
 2. Clone down the repo
-3. Once this tool works offline, you'll need to [download the Pwned Passwords list](https://haveibeenpwned.com/Passwords), ideally via torrent. Choose the SHA-1 version, the one ordered by prevalence.
+3. Once this tool works offline, you'll need to [download the Pwned Passwords list](https://haveibeenpwned.com/Passwords), ideally via torrent\*. Choose the SHA-1 version, the one ordered by prevalence. You'll need about 35 GB of space free to do this.
 4. The torrent downloads a `.7z` compressed file. Double click it to extract it to a ~22 GB text file. That's what this program will need to work with.
+
+\* If you're new to torrents, [Transmission](https://transmissionbt.com) is a decent choice for an application to download torrents, which apparently works on Mac and Windows. (Personally, on Kubuntu, I used [KTorrent](https://www.kde.org/applications/internet/ktorrent/).) Once you have Transmission or another torrent-handling application installed, click the green "torrent" button on [the Pwned Passwords site](https://haveibeenpwned.com/Passwords). Save the (very small) `.torrent` file to your computer, then open that file with your torrent-downloading software. You may have to click "OK" or "Start", but once you do you'll be (probably slowly) downloading hundreds of millions of hashed passwords.
 
 ### Running the tool
 
-1. While in the repo, run `cargo run --release` or `cargo run`
-2. Choose whether to check your KeePass database's passwords offline or online.
+1. While in the folder of this tool, run `cargo run --release` or `cargo run`
+2. Make a choice from the presented menu.
 3. Follow the subsequent instructions.
 
 ### Paranoid mode
 
-If you are worried about this tool sending any information over the internet without your knowledge, you can run it in "Paranoid mode". 
+If you're worried about this tool sending any information over the internet without your knowledge, you can run it in "Paranoid mode". 
 
-In "Paranoid mode", Medic can only open KeePass databases if your computer in **disconnect** from the internet. 
+In "Paranoid mode", Medic can only open KeePass databases if your computer is **disconnected** from the internet. 
 
-To run Medic in Paranoid mode, run `cargo run --release -- -p`. You'll be presented with a more limited menu of options. Before making a menu choice, turn off your connection to the internet.
+To run Medic in Paranoid mode, run `cargo run --release -- -p`. You'll be presented with a more-limited menu of options. Before making a menu choice, turn off your connection to the internet.
 
 ## To do
 
