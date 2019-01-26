@@ -111,23 +111,12 @@ fn get_menu_choice(paranoid_mode: bool) -> u32 {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Entry {
     title: String,
     username: String,
     pass: String,
     digest: String,
-}
-
-impl Clone for Entry {
-    fn clone(&self) -> Entry {
-        Entry {
-            title: self.title.clone(),
-            username: self.username.clone(),
-            pass: self.pass.clone(),
-            digest: self.digest.clone(),
-        }
-    }
 }
 
 fn get_entries_from_keepass_db(file_path: &str, db_pass: String) -> Vec<Entry> {
@@ -175,7 +164,7 @@ fn get_entries_from_keepass_db(file_path: &str, db_pass: String) -> Vec<Entry> {
 fn present_breached_entries(breached_entries: &[Entry]) {
     for breached_entry in breached_entries {
         println!(
-            "Oh no! I found your password for {} on {}",
+            "Oh no! I found your password for {} on {} on a list of breached passwords.",
             breached_entry.username, breached_entry.title
         );
     }
