@@ -23,7 +23,6 @@ fn main() {
     println!("==> 2. Check OFFLINE: Give me a database of SHA-1 hashed passwords to check your KeePass database against");
     println!("==> 3. Check for weak passwords");
     println!("==> 4. Check for duplicate passwords (entirely offline)");
-    println!("==> 5. Check for similar passwords (stricter zxcvbn weakness check)");
     println!();
     let choice: u32 = ensure("Please try again.").unwrap();
 
@@ -63,8 +62,6 @@ fn main() {
     } else if choice == 4 {
         let digest_map = make_digest_map(&entries).unwrap();
         present_duplicated_entries(digest_map);
-    } else if choice == 5 {
-        check_for_and_display_similar_passwords(&entries);
     } else {
         println!("I didn't recognize that choice.");
         return;
@@ -295,40 +292,6 @@ fn check_for_and_display_weak_passwords(entries: &[Entry]) {
             give_feedback(estimate.feedback);
         }
     }
-}
-
-fn check_for_and_display_similar_passwords(entries: &[Entry]) {
-    let mut is_this_the_first_warning = true;
-    for entry in entries {
-        let other_entries_data = make_flat_vector_of_all_other_entries_info(entry, &entries);
-
-        let estimate = zxcvbn(&entry.pass, &(other_entries_data[..])).unwrap();
-        if estimate.score < 4 {
-            if is_this_the_first_warning {
-                println!("The following entries have passwords that are either too similar to another password or entry title in your database or just too weak:");
-                is_this_the_first_warning = false;
-            }
-            println!("   - {} on {}", entry.username, entry.title);
-        }
-    }
-}
-
-fn make_flat_vector_of_all_other_entries_info<'a>(
-    entry_we_are_testing: &Entry,
-    entries: &'a [Entry],
-) -> Vec<&'a str> {
-    let mut flat_vec = Vec::new();
-    for entry in entries {
-        if entry_we_are_testing.username != entry.username
-            && entry_we_are_testing.title != entry.title
-        {
-            flat_vec.push(entry.username.as_str());
-            flat_vec.push(entry.title.as_str());
-            flat_vec.push(entry.pass.as_str());
-        }
-    }
-
-    flat_vec
 }
 
 fn give_feedback(feedback: Option<zxcvbn::feedback::Feedback>) {
