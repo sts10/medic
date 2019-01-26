@@ -12,6 +12,7 @@ use std::fs::File;
 use std::io;
 use std::io::BufRead;
 use std::io::BufReader;
+// use std::mem;
 use std::str::FromStr;
 use zxcvbn::zxcvbn;
 
@@ -165,17 +166,13 @@ fn check_password_online(pass: &str) -> usize {
     let (prefix, suffix) = (&digest[..5], &digest[5..]);
 
     // API requires us to submit just the first 5 characters of the hash
-
     let url = format!("https://api.pwnedpasswords.com/range/{}", prefix);
     let mut response = reqwest::get(&url).unwrap();
-
     let body = response.text().unwrap();
-    // eprintln!("body is {}", body);
 
     // Reponse is a series of lines like
     //  suffix:N
     // Where N is the number of times that password has appeared.
-    // let mut number_of_matches: usize = 0;
 
     for line in body.lines() {
         let this_suffix = &line[..35];
@@ -194,23 +191,18 @@ fn check_database_offline(
 ) -> io::Result<Vec<Entry>> {
     let mut this_chunk = Vec::new();
     let mut breached_entries: Vec<Entry> = Vec::new();
-    // let mut number_of_hashes_checked: usize;
 
     let f = match File::open(passwords_file_path.trim_matches(|c| c == '\'' || c == ' ')) {
         Ok(res) => res,
         Err(e) => return Err(e),
     };
+    let passwords_file_size = f.metadata().unwrap().len() as usize;
 
     // times via `cargo test --release can_check_offline --no-run && time cargo test --release can_check_offline -- --nocapture`
-    // let chunk_size = 1_000_000; // real 1m24.709s
-    // let chunk_size = 20_000_000; // real 1m13.159s
-    let chunk_size = 10_000_000; // real 1m14.613s
+    // let chunk_size = 1_000_000_000; // real 1m6.354s
+    let chunk_size = 500_000_000; // real 1m7.686s
 
-    // println!("attempting to count number of lines");
-    let line_count = 550_000_000 as u64;
-    // println!("Read line count as {}", line_count);
-
-    let pb = ProgressBar::new((line_count / 100_000) as u64);
+    let pb = ProgressBar::new(passwords_file_size as u64);
     if progress_bar {
         pb.set_style(
             ProgressStyle::default_bar()
@@ -221,17 +213,17 @@ fn check_database_offline(
 
     let file = BufReader::new(&f);
     for line in file.lines() {
-        this_chunk.push(line.unwrap());
-        if this_chunk.len() > chunk_size {
+        let this_line = line.unwrap()[..40].to_string();
+        this_chunk.push(this_line);
+        if this_chunk.len() * 48 > chunk_size {
             match check_this_chunk(&entries, &this_chunk) {
                 Ok(mut vec_of_breached_entries) => {
                     breached_entries.append(&mut vec_of_breached_entries)
                 }
                 Err(_e) => eprintln!("found no breached entries in this chunk"),
             }
-            // number_of_hashes_checked += chunk_size;
             if progress_bar {
-                pb.inc((chunk_size / 100_000) as u64);
+                pb.inc(chunk_size as u64);
             }
             this_chunk.clear();
         }
