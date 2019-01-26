@@ -12,7 +12,6 @@ use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
 // use std::mem;
-// use std::env;
 use std::io;
 use zxcvbn::zxcvbn;
 
@@ -272,7 +271,7 @@ pub fn check_for_and_display_weak_passwords(entries: &[Entry]) {
     }
 }
 
-pub fn give_feedback(feedback: Option<zxcvbn::feedback::Feedback>) {
+fn give_feedback(feedback: Option<zxcvbn::feedback::Feedback>) {
     match feedback {
         Some(feedback) => {
             if let Some(warning) = feedback.warning {

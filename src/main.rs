@@ -1,17 +1,8 @@
-extern crate indicatif;
-extern crate keepass;
-extern crate reqwest;
-extern crate rpassword;
-extern crate sha1;
-extern crate zxcvbn;
-
 use medic::*;
 use std::env;
-// use std::mem;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    // let paranoid_mode: bool = args.len() > 1 && args[1].contains("-p");
     let paranoid_mode: bool = read_mode_and_explain(&args);
     println!("paranoid mode is {}", paranoid_mode);
 
