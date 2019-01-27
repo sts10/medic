@@ -1,3 +1,4 @@
+extern crate csv;
 extern crate indicatif;
 extern crate keepass;
 extern crate reqwest;
@@ -5,17 +6,19 @@ extern crate rpassword;
 extern crate sha1;
 extern crate zxcvbn;
 
+// use self::csv::StringRecord;
 use indicatif::{ProgressBar, ProgressStyle};
 use keepass::{Database, Node, OpenDBError};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
+use std::path::Path;
 // use std::mem;
 use std::io;
 use zxcvbn::zxcvbn;
 
-pub fn is_allowed_to_open_a_keepass_database(paranoid_mode: bool) -> bool {
+pub fn is_allowed_access_to_user_passwords(paranoid_mode: bool) -> bool {
     // !paranoid_mode || (paranoid_mode && !has_internet_connection())
     !(paranoid_mode && has_internet_connection())
 }
@@ -39,11 +42,42 @@ impl std::fmt::Display for Entry {
         }
     }
 }
-pub fn get_entries_from_keepass_db(file_path: &str, db_pass: String) -> Vec<Entry> {
+
+pub fn get_file_extension(file_path: &str) -> &str {
+    Path::new(file_path)
+        .extension()
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .trim_matches(|c| c == '\'' || c == ' ')
+}
+
+pub fn get_entries(file_path: &str) -> Vec<Entry> {
+    let file_extension = get_file_extension(file_path);
+
+    let db_pass: Option<String> = if file_extension != "csv" {
+        Some(
+            rpassword::read_password_from_tty(Some(
+                "Enter the password to your KeePass database: ",
+            ))
+            .unwrap(),
+        )
+    } else {
+        None
+    };
+
+    if file_extension != "csv" && db_pass != None {
+        build_entries_from_keepass_db(file_path, db_pass.unwrap())
+    } else {
+        build_entries_from_csv(file_path)
+    }
+}
+
+fn build_entries_from_keepass_db(file_path: &str, db_pass: String) -> Vec<Entry> {
     let mut entries: Vec<Entry> = vec![];
 
     // clean up user-inputted file path to standardize across operating systems/terminal emulators
-    let file_path = file_path.trim_matches(|c| c == '\'' || c == ' ');
+    // let file_path = file_path.trim_matches(|c| c == '\'' || c == ' ');
 
     // Open KeePass database
     println!("Attempting to unlock your KeePass database...");
@@ -85,6 +119,34 @@ pub fn get_entries_from_keepass_db(file_path: &str, db_pass: String) -> Vec<Entr
     entries
 }
 
+fn build_entries_from_csv(file_path: &str) -> Vec<Entry> {
+    let mut entries: Vec<Entry> = vec![];
+
+    let file = File::open(file_path).unwrap();
+    let mut rdr = csv::Reader::from_reader(file);
+    // Loop over each record.
+    for result in rdr.records() {
+        // An error may occur, so abort the program in an unfriendly way.
+        let record = result.expect("a CSV record");
+
+        if record.get(0) == Some("Group") && record.get(1) == Some("Title") {
+            continue;
+        }
+
+        let this_entry = Entry {
+            title: record.get(1).unwrap().to_string(),
+            username: record.get(2).unwrap().to_string(),
+            url: record.get(4).unwrap().to_string(),
+            pass: record.get(3).unwrap().to_string(),
+            digest: sha1::Sha1::from(record.get(3).unwrap())
+                .digest()
+                .to_string()
+                .to_uppercase(),
+        };
+        entries.push(this_entry);
+    }
+    entries
+}
 pub fn present_breached_entries(breached_entries: &[Entry]) {
     if !breached_entries.is_empty() {
         println!(
@@ -182,7 +244,7 @@ pub fn check_database_offline(
     let mut this_chunk = Vec::new();
     let mut breached_entries: Vec<Entry> = Vec::new();
 
-    let f = match File::open(passwords_file_path.trim_matches(|c| c == '\'' || c == ' ')) {
+    let f = match File::open(passwords_file_path) {
         Ok(res) => res,
         Err(e) => return Err(e),
     };
@@ -307,19 +369,30 @@ pub fn gets() -> io::Result<String> {
     }
 }
 
+pub fn get_file_path() -> io::Result<String> {
+    let mut input = String::new();
+    match io::stdin().read_line(&mut input) {
+        Ok(_n) => Ok(input
+            .trim_end_matches("\n")
+            .trim_matches(|c| c == '\'' || c == ' ')
+            .to_string()),
+        Err(error) => Err(error),
+    }
+}
+
 #[cfg(test)]
 mod integration_tests {
     use super::*;
 
-    fn make_test_entries() -> Vec<Entry> {
+    fn make_test_entries_from_keepass_database() -> Vec<Entry> {
         let keepass_db_file_path = "test-files/test_db.kdbx".to_string();
         let test_db_pass = "password".to_string();
-        get_entries_from_keepass_db(&keepass_db_file_path, test_db_pass)
+        build_entries_from_keepass_db(&keepass_db_file_path, test_db_pass)
     }
 
     #[test]
-    fn can_check_online() {
-        let entries = make_test_entries();
+    fn can_check_keepass_db_against_haveibeenpwned_api_online() {
+        let entries = make_test_entries_from_keepass_database();
         let breached_entries = check_database_online(&entries);
         assert_eq!(breached_entries.len(), 3);
     }
@@ -327,8 +400,8 @@ mod integration_tests {
     // you're going to want to run this test by running `cargo test --release`, else it's going to take
     // a real long time
     #[test]
-    fn can_check_offline() {
-        let entries = make_test_entries();
+    fn can_check_keepass_db_against_offline_list_of_hashes() {
+        let entries = make_test_entries_from_keepass_database();
         let passwords_file_path =
             "../hibp/pwned-passwords-sha1-ordered-by-count-v4.txt".to_string();
 
@@ -338,8 +411,8 @@ mod integration_tests {
     }
 
     #[test]
-    fn can_make_a_map_digest() {
-        let entries = make_test_entries();
+    fn can_make_a_map_digest_from_keepass_database() {
+        let entries = make_test_entries_from_keepass_database();
 
         let digest_map = make_digest_map(&entries).unwrap();
 

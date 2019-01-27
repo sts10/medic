@@ -4,7 +4,6 @@ use std::env;
 fn main() {
     let args: Vec<String> = env::args().collect();
     let paranoid_mode: bool = read_mode_and_explain(&args);
-    println!("paranoid mode is {}", paranoid_mode);
 
     let choice = get_menu_choice(paranoid_mode);
 
@@ -16,24 +15,19 @@ fn main() {
         println!("Choose the SHA-1 version, ordered by prevalence. Then extract/unzip it, revelaing an even larger txt file.\n");
         println!("Enter file path of SHA-1 hashes to check:");
 
-        Some(gets().unwrap())
+        Some(get_file_path().unwrap())
     } else {
         None
     };
 
-    println!("\nEnter file path of your KeePass database file");
-    let mut keepass_db_file_path = gets().unwrap();
+    println!("\nEnter file path of your KeePass database\n(This can either be the .kdbx file or a CSV export of your database)");
+    let mut keepass_db_file_path = get_file_path().unwrap();
     if keepass_db_file_path == "t" {
         keepass_db_file_path = "test-files/test_db.kdbx".to_string();
     }
 
-    // not loving this rigamarole for paranoid mode...
-    let entries: Option<Vec<Entry>> = if is_allowed_to_open_a_keepass_database(paranoid_mode) {
-        let db_pass = rpassword::read_password_from_tty(Some(
-            "Enter the password to your KeePass database: ",
-        ))
-        .unwrap();
-        Some(get_entries_from_keepass_db(&keepass_db_file_path, db_pass))
+    let entries: Option<Vec<Entry>> = if is_allowed_access_to_user_passwords(paranoid_mode) {
+        Some(get_entries(&keepass_db_file_path))
     } else {
         println!("You're in Paranoid mode and you have an internet connection. I can't let you open a KeePass database in Paranoid mode if you are able to connect to the internet.");
         println!(
@@ -41,7 +35,7 @@ fn main() {
         );
         None
     };
-
+    // Make sure we have Some Entries!
     let entries: Vec<Entry> = match entries {
         Some(entries) => entries,
         None => return,
@@ -61,7 +55,7 @@ fn main() {
             }
             None => panic!("No passwords file found"),
         }
-    } else if choice == 4 && confirm_online_check() {
+    } else if choice == 4 && !paranoid_mode {
         let breached_entries = check_database_online(&entries);
         present_breached_entries(&breached_entries);
     } else {

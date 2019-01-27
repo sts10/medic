@@ -203,6 +203,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "csv"
+version = "1.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "csv-core 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 1.0.84 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "csv-core"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "memchr 2.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "derive_builder"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -481,6 +498,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "medic"
 version = "0.1.3"
 dependencies = [
+ "csv 1.0.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "indicatif 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "keepass 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "reqwest 0.8.8 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1544,6 +1562,8 @@ dependencies = [
 "checksum crossbeam-deque 0.6.3 (registry+https://github.com/rust-lang/crates.io-index)" = "05e44b8cf3e1a625844d1750e1f7820da46044ff6d28f4d43e455ba3e5bb2c13"
 "checksum crossbeam-epoch 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "f10a4f8f409aaac4b16a5474fb233624238fcdeefb9ba50d5ea059aab63ba31c"
 "checksum crossbeam-utils 0.6.3 (registry+https://github.com/rust-lang/crates.io-index)" = "41ee4864f4797060e52044376f7d107429ce1fb43460021b126424b7180ee21a"
+"checksum csv 1.0.5 (registry+https://github.com/rust-lang/crates.io-index)" = "9fd1c44c58078cfbeaf11fbb3eac9ae5534c23004ed770cc4bfb48e658ae4f04"
+"checksum csv-core 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "fa5cdef62f37e6ffe7d1f07a381bc0db32b7a3ff1cac0de56cb0d81e71f53d65"
 "checksum derive_builder 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)" = "8c998e6ab02a828dd9735c18f154e14100e674ed08cb4e1938f0e4177543f439"
 "checksum derive_builder_core 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "735e24ee9e5fa8e16b86da5007856e97d592e11867e45d76e0c0d0a164a0b757"
 "checksum dtoa 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)" = "6d301140eb411af13d3115f9a562c85cc6b541ade9dfa314132244aaee7489dd"
