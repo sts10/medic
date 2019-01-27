@@ -8,7 +8,8 @@ extern crate zxcvbn;
 
 // use self::csv::StringRecord;
 use indicatif::{ProgressBar, ProgressStyle};
-use keepass::{Database, Node, OpenDBError};
+use keepass::result::{Error, Result, ResultExt};
+use keepass::{Database, Node};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufRead;
@@ -76,16 +77,14 @@ pub fn get_entries(file_path: &str) -> Vec<Entry> {
 fn build_entries_from_keepass_db(file_path: &str, db_pass: String) -> Vec<Entry> {
     let mut entries: Vec<Entry> = vec![];
 
-    // clean up user-inputted file path to standardize across operating systems/terminal emulators
-    // let file_path = file_path.trim_matches(|c| c == '\'' || c == ' ');
-
-    // Open KeePass database
     println!("Attempting to unlock your KeePass database...");
-    let db = match File::open(std::path::Path::new(file_path))
-        // .map_err(|e| OpenDBError::Io(e))
-        .map_err(OpenDBError::Io)
-        .and_then(|mut db_file| Database::open(&mut db_file, &db_pass))
-    {
+    // Open KeePass database
+    let path = std::path::Path::new(file_path);
+    let db = match Database::open(
+        &mut File::open(path).unwrap(), // the database
+        Some(&db_pass),                 // password
+        None,                           // keyfile
+    ) {
         Ok(db) => db,
         Err(e) => panic!("Error: {}", e),
     };
@@ -94,10 +93,10 @@ fn build_entries_from_keepass_db(file_path: &str, db_pass: String) -> Vec<Entry>
     // Iterate over all Groups and Nodes
     for node in &db.root {
         match node {
-            Node::Group(_g) => {
+            Node::GroupNode(_g) => {
                 // println!("Saw group '{}'", g.name);
             }
-            Node::Entry(e) => {
+            Node::EntryNode(e) => {
                 let this_entry = Entry {
                     title: e.get_title().unwrap().to_string(),
                     username: e.get_username().unwrap().to_string(),
