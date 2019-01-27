@@ -22,6 +22,7 @@ pub fn is_allowed_to_open_a_keepass_database(paranoid_mode: bool) -> bool {
 #[derive(Debug, Clone)]
 pub struct Entry {
     title: String,
+    url: String,
     username: String,
     pass: String,
     digest: String,
@@ -52,15 +53,19 @@ pub fn get_entries_from_keepass_db(file_path: &str, db_pass: String) -> Vec<Entr
                 // println!("Saw group '{}'", g.name);
             }
             Node::Entry(e) => {
-                let this_entry = Entry {
+                let mut this_entry = Entry {
                     title: e.get_title().unwrap().to_string(),
                     username: e.get_username().unwrap().to_string(),
+                    url: e.get("URL").unwrap().to_string(),
                     pass: e.get_password().unwrap().to_string(),
                     digest: sha1::Sha1::from(e.get_password().unwrap().to_string())
                         .digest()
                         .to_string()
                         .to_uppercase(),
                 };
+                if this_entry.title == "" && this_entry.url != "" {
+                    this_entry.title = this_entry.url.clone();
+                }
                 entries.push(this_entry);
             }
         }
