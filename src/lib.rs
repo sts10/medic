@@ -8,7 +8,6 @@ extern crate zxcvbn;
 
 // use self::csv::StringRecord;
 use indicatif::{ProgressBar, ProgressStyle};
-use keepass::result::{Error, Result, ResultExt};
 use keepass::{Database, Node};
 use std::collections::HashMap;
 use std::fs::File;
@@ -410,7 +409,7 @@ mod integration_tests {
     }
 
     #[test]
-    fn can_make_a_map_digest_from_keepass_database() {
+    fn can_make_a_digest_map_from_keepass_database() {
         let entries = make_test_entries_from_keepass_database();
 
         let digest_map = make_digest_map(&entries).unwrap();
