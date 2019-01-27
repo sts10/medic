@@ -73,21 +73,21 @@ pub fn get_entries(file_path: &str, keyfile_path: Option<&str>) -> Vec<Entry> {
     }
 }
 
-fn open_keepass_db(
+fn unlock_keepass_database(
     file_path: &str,
     db_pass: String,
-    key_file_path: Option<&str>,
+    keyfile_path: Option<&str>,
 ) -> keepass::Database {
     let path = std::path::Path::new(file_path);
 
-    if key_file_path != None {
+    if keyfile_path != None {
         match Database::open(
             &mut File::open(path).unwrap(), // the database
             Some(&db_pass),                 // password
-            Some(&mut File::open(std::path::Path::new(key_file_path.unwrap())).unwrap()), // keyfile
+            Some(&mut File::open(std::path::Path::new(keyfile_path.unwrap())).unwrap()), // keyfile
         ) {
             Ok(db) => db,
-            Err(e) => panic!("Error: {}", e),
+            Err(e) => panic!("Error opening database: {}", e),
         }
     } else {
         match Database::open(
@@ -97,9 +97,9 @@ fn open_keepass_db(
         ) {
             Ok(db) => db,
             Err(_e) => {
-                println!("\nError opening your database. Maybe you have a keyfile? If so, enter its file path:");
-                let key_file_path = get_file_path().unwrap();
-                open_keepass_db(file_path, db_pass, Some(&key_file_path))
+                println!("\nError opening database. Maybe you have a keyfile? If so, enter its file path:");
+                let keyfile_path = get_file_path().unwrap();
+                unlock_keepass_database(file_path, db_pass, Some(&keyfile_path))
             }
         }
     }
@@ -108,13 +108,12 @@ fn open_keepass_db(
 fn build_entries_from_keepass_db(
     file_path: &str,
     db_pass: String,
-    key_file_path: Option<&str>,
+    keyfile_path: Option<&str>,
 ) -> Vec<Entry> {
     let mut entries: Vec<Entry> = vec![];
 
     println!("Attempting to unlock your KeePass database...");
-    // Open KeePass database
-    let db = open_keepass_db(file_path, db_pass, key_file_path);
+    let db = unlock_keepass_database(file_path, db_pass, keyfile_path);
     // Iterate over all Groups and Nodes
     for node in &db.root {
         match node {
@@ -132,9 +131,6 @@ fn build_entries_from_keepass_db(
                         .to_string()
                         .to_uppercase(),
                 };
-                // if this_entry.title == "" && this_entry.url != "" {
-                //     this_entry.title = this_entry.url.clone();
-                // }
                 entries.push(this_entry);
             }
         }
