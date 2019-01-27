@@ -27,7 +27,17 @@ pub struct Entry {
     pass: String,
     digest: String,
 }
-
+impl std::fmt::Display for Entry {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        if self.title != "" {
+            write!(f, "{} on {}", self.username, self.title)
+        } else if self.title == "" && self.url != "" {
+            write!(f, "{} for {}", self.username, self.url)
+        } else {
+            write!(f, "{}", self.username)
+        }
+    }
+}
 pub fn get_entries_from_keepass_db(file_path: &str, db_pass: String) -> Vec<Entry> {
     let mut entries: Vec<Entry> = vec![];
 
@@ -53,7 +63,7 @@ pub fn get_entries_from_keepass_db(file_path: &str, db_pass: String) -> Vec<Entr
                 // println!("Saw group '{}'", g.name);
             }
             Node::Entry(e) => {
-                let mut this_entry = Entry {
+                let this_entry = Entry {
                     title: e.get_title().unwrap().to_string(),
                     username: e.get_username().unwrap().to_string(),
                     url: e.get("URL").unwrap().to_string(),
@@ -63,9 +73,9 @@ pub fn get_entries_from_keepass_db(file_path: &str, db_pass: String) -> Vec<Entr
                         .to_string()
                         .to_uppercase(),
                 };
-                if this_entry.title == "" && this_entry.url != "" {
-                    this_entry.title = this_entry.url.clone();
-                }
+                // if this_entry.title == "" && this_entry.url != "" {
+                //     this_entry.title = this_entry.url.clone();
+                // }
                 entries.push(this_entry);
             }
         }
@@ -80,10 +90,7 @@ pub fn present_breached_entries(breached_entries: &[Entry]) {
             "The following entries have passwords on contained in the list of breached passwords:"
         );
         for breached_entry in breached_entries {
-            println!(
-                "   - {} on {}",
-                breached_entry.username, breached_entry.title
-            );
+            println!("   - {}", breached_entry);
         }
     } else {
         println!("I didn't find any of your passwords on the breached passwords list");
@@ -249,7 +256,7 @@ pub fn present_duplicated_entries(digest_map: HashMap<String, Vec<Entry>>) {
         if groups.len() > 1 {
             println!("The following entries have the same password:\n");
             for entry in groups {
-                println!("{} for {}", entry.username, entry.title);
+                println!("   - {}", entry);
             }
             has_duplicated_entries = true;
         }
@@ -267,10 +274,7 @@ pub fn check_for_and_display_weak_passwords(entries: &[Entry]) {
         let estimate = zxcvbn(&entry.pass, &[&entry.title, &entry.username]).unwrap();
         if estimate.score < 4 {
             println!("--------------------------------");
-            println!(
-                "Your password for {} on {} is weak.",
-                entry.username, entry.title
-            );
+            println!("Your password for {} is weak.", entry);
             give_feedback(estimate.feedback);
         }
     }
