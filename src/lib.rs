@@ -66,7 +66,7 @@ pub fn get_entries(file_path: &str, keyfile_path: Option<&str>) -> Vec<Entry> {
         None
     };
 
-    if file_extension != "csv" && db_pass != None {
+    if file_extension != "csv" && db_pass.is_some() {
         build_entries_from_keepass_db(file_path, db_pass.unwrap(), keyfile_path)
     } else {
         build_entries_from_csv(file_path)
@@ -80,7 +80,7 @@ fn unlock_keepass_database(
 ) -> keepass::Database {
     let path = std::path::Path::new(file_path);
 
-    if keyfile_path != None {
+    if keyfile_path.is_some() {
         match Database::open(
             &mut File::open(path).unwrap(), // the database
             Some(&db_pass),                 // password
