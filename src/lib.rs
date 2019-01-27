@@ -52,7 +52,7 @@ pub fn get_file_extension(file_path: &str) -> &str {
         .trim_matches(|c| c == '\'' || c == ' ')
 }
 
-pub fn get_entries(file_path: &str) -> Vec<Entry> {
+pub fn get_entries(file_path: &str, keyfile_path: Option<&str>) -> Vec<Entry> {
     let file_extension = get_file_extension(file_path);
 
     let db_pass: Option<String> = if file_extension != "csv" {
@@ -67,7 +67,7 @@ pub fn get_entries(file_path: &str) -> Vec<Entry> {
     };
 
     if file_extension != "csv" && db_pass != None {
-        build_entries_from_keepass_db(file_path, db_pass.unwrap(), None)
+        build_entries_from_keepass_db(file_path, db_pass.unwrap(), keyfile_path)
     } else {
         build_entries_from_csv(file_path)
     }
@@ -93,11 +93,11 @@ fn open_keepass_db(
         match Database::open(
             &mut File::open(path).unwrap(), // the database
             Some(&db_pass),                 // password
-            None,                           //keyfile
+            None,                           // keyfile
         ) {
             Ok(db) => db,
-            Err(e) => {
-                println!("Enter your key file");
+            Err(_e) => {
+                println!("\nError opening your database. Maybe you have a keyfile? If so, enter its file path:");
                 let key_file_path = get_file_path().unwrap();
                 open_keepass_db(file_path, db_pass, Some(&key_file_path))
             }
@@ -114,7 +114,7 @@ fn build_entries_from_keepass_db(
 
     println!("Attempting to unlock your KeePass database...");
     // Open KeePass database
-    let db = open_keepass_db(file_path, db_pass, None);
+    let db = open_keepass_db(file_path, db_pass, key_file_path);
     // Iterate over all Groups and Nodes
     for node in &db.root {
         match node {
@@ -411,7 +411,9 @@ mod integration_tests {
     fn make_test_entries_from_keepass_database() -> Vec<Entry> {
         let keepass_db_file_path = "test-files/test_db.kdbx".to_string();
         let test_db_pass = "password".to_string();
-        build_entries_from_keepass_db(&keepass_db_file_path, test_db_pass, None)
+        let test_keyfile = Some("test-files/test_key_file");
+        // build_entries_from_keepass_db(&keepass_db_file_path, test_db_pass, None)
+        build_entries_from_keepass_db(&keepass_db_file_path, test_db_pass, test_keyfile)
     }
 
     #[test]

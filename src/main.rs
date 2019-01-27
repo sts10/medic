@@ -27,7 +27,7 @@ fn main() {
     }
 
     let entries: Option<Vec<Entry>> = if is_allowed_access_to_user_passwords(paranoid_mode) {
-        Some(get_entries(&keepass_db_file_path))
+        Some(get_entries(&keepass_db_file_path, None))
     } else {
         println!("You're in Paranoid mode and you have an internet connection. I can't let you open a KeePass database in Paranoid mode if you are able to connect to the internet.");
         println!(
