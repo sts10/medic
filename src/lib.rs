@@ -67,28 +67,54 @@ pub fn get_entries(file_path: &str) -> Vec<Entry> {
     };
 
     if file_extension != "csv" && db_pass != None {
-        build_entries_from_keepass_db(file_path, db_pass.unwrap())
+        build_entries_from_keepass_db(file_path, db_pass.unwrap(), None)
     } else {
         build_entries_from_csv(file_path)
     }
 }
 
-fn build_entries_from_keepass_db(file_path: &str, db_pass: String) -> Vec<Entry> {
+fn open_keepass_db(
+    file_path: &str,
+    db_pass: String,
+    key_file_path: Option<&str>,
+) -> keepass::Database {
+    let path = std::path::Path::new(file_path);
+
+    if key_file_path != None {
+        match Database::open(
+            &mut File::open(path).unwrap(), // the database
+            Some(&db_pass),                 // password
+            Some(&mut File::open(std::path::Path::new(key_file_path.unwrap())).unwrap()), // keyfile
+        ) {
+            Ok(db) => db,
+            Err(e) => panic!("Error: {}", e),
+        }
+    } else {
+        match Database::open(
+            &mut File::open(path).unwrap(), // the database
+            Some(&db_pass),                 // password
+            None,                           //keyfile
+        ) {
+            Ok(db) => db,
+            Err(e) => {
+                println!("Enter your key file");
+                let key_file_path = get_file_path().unwrap();
+                open_keepass_db(file_path, db_pass, Some(&key_file_path))
+            }
+        }
+    }
+}
+
+fn build_entries_from_keepass_db(
+    file_path: &str,
+    db_pass: String,
+    key_file_path: Option<&str>,
+) -> Vec<Entry> {
     let mut entries: Vec<Entry> = vec![];
 
     println!("Attempting to unlock your KeePass database...");
     // Open KeePass database
-    let path = std::path::Path::new(file_path);
-    let db = match Database::open(
-        &mut File::open(path).unwrap(), // the database
-        Some(&db_pass),                 // password
-        None,                           // keyfile
-    ) {
-        Ok(db) => db,
-        Err(e) => panic!("Error: {}", e),
-    };
-
-    println!("Reading your KeePass database...");
+    let db = open_keepass_db(file_path, db_pass, None);
     // Iterate over all Groups and Nodes
     for node in &db.root {
         match node {
@@ -385,7 +411,7 @@ mod integration_tests {
     fn make_test_entries_from_keepass_database() -> Vec<Entry> {
         let keepass_db_file_path = "test-files/test_db.kdbx".to_string();
         let test_db_pass = "password".to_string();
-        build_entries_from_keepass_db(&keepass_db_file_path, test_db_pass)
+        build_entries_from_keepass_db(&keepass_db_file_path, test_db_pass, None)
     }
 
     #[test]
