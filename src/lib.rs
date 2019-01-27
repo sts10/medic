@@ -16,7 +16,8 @@ use std::io;
 use zxcvbn::zxcvbn;
 
 pub fn is_allowed_to_open_a_keepass_database(paranoid_mode: bool) -> bool {
-    !paranoid_mode || (paranoid_mode && !has_internet_connection())
+    // !paranoid_mode || (paranoid_mode && !has_internet_connection())
+    !(paranoid_mode && has_internet_connection())
 }
 
 #[derive(Debug, Clone)]
@@ -85,7 +86,7 @@ pub fn get_entries_from_keepass_db(file_path: &str, db_pass: String) -> Vec<Entr
 }
 
 pub fn present_breached_entries(breached_entries: &[Entry]) {
-    if breached_entries.len() > 0 {
+    if !breached_entries.is_empty() {
         println!(
             "The following entries have passwords on contained in the list of breached passwords:"
         );
@@ -244,13 +245,16 @@ pub fn make_digest_map(entries: &[Entry]) -> io::Result<HashMap<String, Vec<Entr
         digest_map
             .entry(entry.clone().digest)
             .and_modify(|vec| vec.push(entry.clone()))
-            .or_insert([entry.clone()].to_vec());
+            .or_insert_with(|| vec![entry.clone()]);
     }
 
     Ok(digest_map)
 }
 
-pub fn present_duplicated_entries(digest_map: HashMap<String, Vec<Entry>>) {
+// Clippy told me "warning: parameter of type `HashMap` should be generalized over different hashers"
+pub fn present_duplicated_entries<S: ::std::hash::BuildHasher>(
+    digest_map: HashMap<String, Vec<Entry>, S>,
+) {
     let mut has_duplicated_entries = false;
     for groups in digest_map.values() {
         if groups.len() > 1 {
