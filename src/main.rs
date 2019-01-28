@@ -12,7 +12,7 @@ fn main() {
             "I need a text file of SHA-1 hashes of passwords to check your password offline.\n"
         );
         println!("To download a copy of very large list of password hashes from HaveIBeenPwned, go to: https://haveibeenpwned.com/Passwords");
-        println!("Choose the SHA-1 version, ordered by prevalence. Then extract/unzip it, revelaing an even larger txt file.\n");
+        println!("Choose the SHA-1 version, ordered by prevalence. Then extract/unzip it to get an even larger txt file.\n");
         println!("Enter file path of SHA-1 hashes to check:");
 
         Some(get_file_path().unwrap())
