@@ -324,10 +324,12 @@ pub fn check_this_chunk(entries: &[Entry], chunk: &[String]) -> io::Result<Vec<E
 pub fn make_digest_map(entries: &[Entry]) -> io::Result<HashMap<String, Vec<Entry>>> {
     let mut digest_map: HashMap<String, Vec<Entry>> = HashMap::new();
     for entry in entries {
-        digest_map
-            .entry(entry.clone().digest)
-            .and_modify(|vec| vec.push(entry.clone()))
-            .or_insert_with(|| vec![entry.clone()]);
+        if entry.pass != "" {
+            digest_map
+                .entry(entry.clone().digest)
+                .and_modify(|vec| vec.push(entry.clone()))
+                .or_insert_with(|| vec![entry.clone()]);
+        }
     }
 
     Ok(digest_map)
