@@ -359,11 +359,13 @@ pub fn present_duplicated_entries<S: ::std::hash::BuildHasher>(
 
 pub fn check_for_and_display_weak_passwords(entries: &[Entry]) {
     for entry in entries {
-        let estimate = zxcvbn(&entry.pass, &[&entry.title, &entry.username]).unwrap();
-        if estimate.score < 4 {
-            println!("--------------------------------");
-            println!("Your password for {} is weak.", entry);
-            give_feedback(estimate.feedback);
+        if entry.pass != "" {
+            let estimate = zxcvbn(&entry.pass, &[&entry.title, &entry.username]).unwrap();
+            if estimate.score < 4 {
+                println!("--------------------------------");
+                println!("Your password for {} is weak.", entry);
+                give_feedback(estimate.feedback);
+            }
         }
     }
 }
