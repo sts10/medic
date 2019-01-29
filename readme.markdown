@@ -33,11 +33,22 @@ In "Paranoid mode", Medic can only open KeePass databases if your computer is **
 
 To run Medic in Paranoid mode, run `cargo run --release -- -p`. You'll be presented with a more-limited menu of options. Before making a menu choice, turn off your connection to the internet.
 
+### How I chose to use this tool 
+
+1. [Download the PwnedPasswords list](https://haveibeenpwned.com/Passwords) (11 GB compressed, 22GB extracted). 
+2. Open your KeePass database in KeePassXC or whatever desktop app you use to open your database. 
+3. Export your KeePass database to a CSV file (In KeePassXC: `Database` menu > "Export to CSv...") (Heads up, this file includes your passwords, so be careful). 
+4. Lock your KeePass database.
+5. Clone down this tool and set it up following the instructions above. 
+6. Run Medic by entering the following command: `cargo run --release` 
+7. Choose to perform the offline PwnedPasswords check. Optional: Search for weak or duplicate passwords. Copy and paste results in a new, local text document.
+8. When finished, securely delete that exported CSV file. If on MacOS, run `srm <file_name>.csv`. On Ubuntu-based Linux distross, try `shred -ufv --iterations=45 <file_name>.csv`. Your sensitive data should now be safely deleted, but feel free to securely delete Medic itself if so inclined.
+
 ## To do
 
 1. Better error handling
-2. Write tests
-3. Test how it works with a KeePass database that uses a key file and/or Challenge+Accept
+2. Write more tests
+3. Handle entries with blank passwords better
 4. Offer an option to check for _similar_ passwords (maybe using [zxcvbn](https://github.com/shssoichiro/zxcvbn-rs)?)
 5. Design/commission a logo?!
 
