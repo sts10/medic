@@ -4,7 +4,7 @@ A Rust CLI that provides a variety of ways to check the "health" of a given KeeP
 
 **WARNING**: This software is a work in progress and still experimental. I would **NOT** use it with real KeePass databases or passwords just yet.
 
-**Medic provides four ways to check the health of a given KeePass database.** Here's the current menu:
+**Medic provides four ways to check the "health" of a given KeePass database.** Here's the current menu:
 
 ```text
 To check your KeePass database's passwords, do you want to:
