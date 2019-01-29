@@ -1,10 +1,10 @@
 # Medic
 
-A Rust CLI that checks the passwords of a KeePass database against the Have I Been Pwned password list. 
+A Rust CLI that provides a variety of ways to check the "health" of a given KeePass database, including checking passwords against the Have I Been Pwned password list. 
 
 **WARNING**: This software is a work in progress and still experimental. I would **NOT** use it with real KeePass databases or passwords just yet.
 
-Medic provides four ways to check the health of a given KeePass database. Here's the current menu:
+**Medic provides four ways to check the health of a given KeePass database.** Here's the current menu:
 
 ```text
 To check your KeePass database's passwords, do you want to:
@@ -15,7 +15,7 @@ To check your KeePass database's passwords, do you want to:
 ==> 4. Check ONLINE for breached passwords: I will hash your passwords and send the first 5 characters of each hash over the internet to HaveIBeenPwned, in order to check if they've been breached.
 ```
 
-Option 1 uses zxcvbn to find low-entropy passwords in the given KeePass database. 
+Option 1 uses [zxcvbn](https://github.com/dropbox/zxcvbn) to find weak passwords in the given KeePass database. 
 
 Option 2 simply finds entries which have the exact same password. (Password re-use is bad.)
 
