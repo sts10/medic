@@ -70,7 +70,7 @@ fn get_menu_choice(paranoid_mode: bool) -> u32 {
         println!();
         println!("To check your KeePass database's passwords, do you want to:\n");
         println!("==> 1. Check for weak passwords");
-        println!("==> 2. Check for duplicate passwords (entirely offline)");
+        println!("==> 2. Check for duplicate passwords");
         println!("==> 3. Check OFFLINE for breached passwords: Give me a database of SHA-1 hashed passwords to check your KeePass database against");
         if !paranoid_mode {
             println!("==> 4. Check ONLINE for breached passwords: I will hash your passwords and send the first 5 characters of each hash over the internet to HaveIBeenPwned, in order to check if they've been breached.");
