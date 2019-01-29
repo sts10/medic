@@ -131,7 +131,9 @@ fn build_entries_from_keepass_db(
                         .to_string()
                         .to_uppercase(),
                 };
-                entries.push(this_entry);
+                if this_entry.pass != "" {
+                    entries.push(this_entry);
+                }
             }
         }
     }
@@ -163,7 +165,9 @@ fn build_entries_from_csv(file_path: &str) -> Vec<Entry> {
                 .to_string()
                 .to_uppercase(),
         };
-        entries.push(this_entry);
+        if this_entry.pass != "" {
+            entries.push(this_entry);
+        }
     }
     entries
 }
@@ -324,12 +328,10 @@ pub fn check_this_chunk(entries: &[Entry], chunk: &[String]) -> io::Result<Vec<E
 pub fn make_digest_map(entries: &[Entry]) -> io::Result<HashMap<String, Vec<Entry>>> {
     let mut digest_map: HashMap<String, Vec<Entry>> = HashMap::new();
     for entry in entries {
-        if entry.pass != "" {
-            digest_map
-                .entry(entry.clone().digest)
-                .and_modify(|vec| vec.push(entry.clone()))
-                .or_insert_with(|| vec![entry.clone()]);
-        }
+        digest_map
+            .entry(entry.clone().digest)
+            .and_modify(|vec| vec.push(entry.clone()))
+            .or_insert_with(|| vec![entry.clone()]);
     }
 
     Ok(digest_map)
@@ -359,13 +361,11 @@ pub fn present_duplicated_entries<S: ::std::hash::BuildHasher>(
 
 pub fn check_for_and_display_weak_passwords(entries: &[Entry]) {
     for entry in entries {
-        if entry.pass != "" {
-            let estimate = zxcvbn(&entry.pass, &[&entry.title, &entry.username]).unwrap();
-            if estimate.score < 4 {
-                println!("--------------------------------");
-                println!("Your password for {} is weak.", entry);
-                give_feedback(estimate.feedback);
-            }
+        let estimate = zxcvbn(&entry.pass, &[&entry.title, &entry.username]).unwrap();
+        if estimate.score < 4 {
+            println!("Your password for {} is weak.", entry);
+            give_feedback(estimate.feedback);
+            println!("\n--------------------------------");
         }
     }
 }

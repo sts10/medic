@@ -41,7 +41,7 @@ fn main() {
         None => return,
     };
 
-    println!("\n================= BEGIN REPORT ==================\n");
+    println!("\n================================================\n");
     if choice == 1 {
         check_for_and_display_weak_passwords(&entries);
     } else if choice == 2 {
@@ -62,7 +62,7 @@ fn main() {
         println!("I didn't recognize that choice.");
         return;
     }
-    println!("\n================== END REPORT ==================\n ");
+    println!("\n================================================\n");
 }
 
 fn get_menu_choice(paranoid_mode: bool) -> u32 {
