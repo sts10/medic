@@ -10,7 +10,7 @@ A Rust CLI that provides a variety of ways to check the "health" of a given KeeP
 To check your KeePass database's passwords, do you want to:
 
 ==> 1. Check for weak passwords
-==> 2. Check for duplicate passwords (entirely offline)
+==> 2. Check for duplicate passwords
 ==> 3. Check OFFLINE for breached passwords: Give me a database of SHA-1 hashed passwords to check your KeePass database against
 ==> 4. Check ONLINE for breached passwords: I will hash your passwords and send the first 5 characters of each hash over the internet to HaveIBeenPwned, in order to check if they've been breached.
 ```
