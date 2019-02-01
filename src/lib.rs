@@ -80,11 +80,11 @@ fn unlock_keepass_database(
 ) -> keepass::Database {
     let path = std::path::Path::new(file_path);
 
-    if keyfile_path.is_some() {
+    if let Some(keyf_path) = keyfile_path {
         match Database::open(
             &mut File::open(path).unwrap(), // the database
             Some(&db_pass),                 // password
-            Some(&mut File::open(std::path::Path::new(keyfile_path.unwrap())).unwrap()), // keyfile
+            Some(&mut File::open(std::path::Path::new(keyf_path)).unwrap()), // keyfile
         ) {
             Ok(db) => db,
             Err(e) => panic!("Error opening database: {}", e),
