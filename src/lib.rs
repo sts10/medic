@@ -342,10 +342,10 @@ pub fn present_duplicated_entries<S: ::std::hash::BuildHasher>(
     digest_map: HashMap<String, Vec<Entry>, S>,
 ) {
     let mut has_duplicated_entries = false;
-    for groups in digest_map.values() {
-        if groups.len() > 1 {
+    for group in digest_map.values() {
+        if group.len() > 1 {
             println!("The following entries have the same password:\n");
-            for entry in groups {
+            for entry in group {
                 println!("   - {}", entry);
             }
             has_duplicated_entries = true;
