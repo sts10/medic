@@ -11,15 +11,14 @@ use indicatif::{ProgressBar, ProgressStyle};
 use keepass::{Database, Node};
 use std::collections::HashMap;
 use std::fs::File;
+use std::io;
+use std::io::prelude::Read;
 use std::io::BufRead;
 use std::io::BufReader;
 use std::path::Path;
-// use std::mem;
-use std::io;
 use zxcvbn::zxcvbn;
 
 pub fn is_allowed_access_to_user_passwords(paranoid_mode: bool) -> bool {
-    // !paranoid_mode || (paranoid_mode && !has_internet_connection())
     !(paranoid_mode && has_internet_connection())
 }
 
@@ -79,28 +78,20 @@ fn unlock_keepass_database(
     keyfile_path: Option<&str>,
 ) -> keepass::Database {
     let path = std::path::Path::new(file_path);
+    let mut keyfile = keyfile_path.map(|kfp| File::open(std::path::Path::new(kfp)).unwrap());
 
-    if let Some(keyf_path) = keyfile_path {
-        match Database::open(
-            &mut File::open(path).unwrap(), // the database
-            Some(&db_pass),                 // password
-            Some(&mut File::open(std::path::Path::new(keyf_path)).unwrap()), // keyfile
-        ) {
-            Ok(db) => db,
-            Err(e) => panic!("Error opening database: {}", e),
-        }
-    } else {
-        match Database::open(
-            &mut File::open(path).unwrap(), // the database
-            Some(&db_pass),                 // password
-            None,                           // keyfile
-        ) {
-            Ok(db) => db,
-            Err(_e) => {
-                println!("\nError opening database. Maybe you have a keyfile? If so, enter its file path:");
-                let keyfile_path = get_file_path().unwrap();
-                unlock_keepass_database(file_path, db_pass, Some(&keyfile_path))
-            }
+    match Database::open(
+        &mut File::open(path).unwrap(),               // the database
+        Some(&db_pass),                               // password
+        keyfile.as_mut().map(|f| f as &mut dyn Read), // keyfile
+    ) {
+        Ok(db) => db,
+        Err(_e) => {
+            println!(
+                "\nError opening database. Maybe you have a keyfile? If so, enter its file path:"
+            );
+            let keyfile_path = get_file_path().unwrap();
+            unlock_keepass_database(file_path, db_pass, Some(&keyfile_path))
         }
     }
 }
