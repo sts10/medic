@@ -526,7 +526,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "medic"
-version = "0.1.7"
+version = "0.1.8"
 dependencies = [
  "csv 1.0.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "indicatif 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
