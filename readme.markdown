@@ -39,20 +39,20 @@ ARGS:
 
 ### Examples
 
-- `cargo run --release -- -h=../hibp/pwned-passwords-sha1-ordered-by-count-v4.txt test_db.kdbx` checks the passwords of `test_db.kdbx` against the hashes `../hibp/pwned-passwords-sha1-ordered-by-count-v4.txt`, which is a large text file of password hashes. Medic will display any of the accounts in the `test_db.kdbx` with passwords that appear in the list.
+- `medic -h=../hibp/pwned-passwords-sha1-ordered-by-count-v4.txt test_db.kdbx` checks the passwords of `test_db.kdbx` against the hashes `../hibp/pwned-passwords-sha1-ordered-by-count-v4.txt`, which is a large text file of password hashes. Medic will display any of the accounts in the `test_db.kdbx` with passwords that appear in the list.
 
-- `cargo run --release -- -o -c test.kdbx` checks the passwords of `test.kdbx` using the HaveIBeenPwned API, as well as looks for weak and duplicate passwords.
+- `medic -o -c test.kdbx` checks the passwords of `test.kdbx` using the HaveIBeenPwned API, as well as looks for weak and duplicate passwords.
 
-- `cargo run --release -- -o -c -k=test-files/test_key_file -d test-files/test_db.kdbx` checks the passwords of `test_db.kdbx` -- which requires key file `test_key_file` -- using the HaveIBeenPwned API, as well as looks for weak and duplicate passwords. 
+- `medic -o -c -k=test-files/test_key_file -d test-files/test_db.kdbx` checks the passwords of `test_db.kdbx` -- which requires key file `test_key_file` -- using the HaveIBeenPwned API, as well as looks for weak and duplicate passwords. 
 
-- `cargo run --release -- -c test.kdbx` checks the passwords of `test.kdbx` for weak and duplicate passwords.
+- `medic -c test.kdbx` checks the passwords of `test.kdbx` for weak and duplicate passwords.
 
-- `cargo run --release -- -c -h=pwnedpasswords.txt exported_csv_file.csv` checks an exported csv file against the hashes in `pwnedpasswords.txt`, as well as searches for weak and/or duplicate passwords.
+- `medic -c -h=pwnedpasswords.txt exported_csv_file.csv` checks an exported csv file against the hashes in `pwnedpasswords.txt`, as well as searches for weak and/or duplicate passwords.
 
 ## Installation/Setup
 
 1. [Install Rust](https://www.rust-lang.org/tools/install) if you haven't already
-2. Clone down the repo
+2. `cargo install --git https://github.com/sts10/medic`
 3. Optional: If you'd like to check if any of your passwords have been breached _without_ sending any information about them over the internet, you'll need to [download the Pwned Passwords list](https://haveibeenpwned.com/Passwords), ideally via torrent\*. Choose the SHA-1 version, the one ordered by prevalence. You'll need about 35 GB of space free to do this. The torrent downloads a `.7z` compressed file. Double click it to extract it to a ~22 GB text file. That's what this program will need to work with.
 
 \* If you're new to torrents, [Transmission](https://transmissionbt.com) is a decent choice for an application to download torrents, which apparently works on Mac and Windows. (Personally, on Kubuntu, I used [KTorrent](https://www.kde.org/applications/internet/ktorrent/).) Once you have Transmission or another torrent-handling application installed, click the green "torrent" button on [the Pwned Passwords site](https://haveibeenpwned.com/Passwords). Save the (very small) `.torrent` file to your computer, then open that file with your torrent-downloading software. You may have to click "OK" or "Start", but once you do you'll be (probably slowly) downloading hundreds of millions of hashed passwords.
@@ -69,15 +69,15 @@ If you use either of these incompatible KDFs, you can still use this tool by eit
 2. Open your KeePass database in KeePassXC or whatever desktop app you use to open your database. 
 3. Export your KeePass database to a CSV file (In KeePassXC: `Database` menu > "Export to CSV...") (Heads up, this file includes your passwords, so be careful). 
 4. Lock your KeePass database.
-5. Clone down this tool and set it up following the instructions above. 
-6. Run Medic by entering the following command: `cargo run --release -- -h=pwnedpasswords.txt -c <my-exported-database>.csv`
+5. Install Medic using instructions above.
+6. Run Medic by entering the following command: `medic -h=pwnedpasswords.txt -c <my-exported-database>.csv`
 7. When finished, securely delete that exported CSV file. If on MacOS, run `srm <my-exported-database>.csv`. On Ubuntu-based Linux distributions, try `shred -ufv --iterations=60 <my-exported-database>.csv`. Your sensitive data should now be safely deleted, but feel free to securely delete Medic itself if so inclined.
 
 ## To do
 
 1. Better error handling (especially if user gets CLI arguments wrong or is using an incompatible KDF)
 2. Write more tests
-3. Handle entries with blank passwords better
+3. Optionally send output to a file
 4. Offer real packaging options?
 5. Offer an option to check for _similar_ passwords (maybe using [zxcvbn](https://github.com/shssoichiro/zxcvbn-rs)?)
 6. Design/commission a logo?!
