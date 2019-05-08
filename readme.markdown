@@ -95,4 +95,6 @@ If you use either of these incompatible KDFs, you can still use this tool by eit
 - [keepass-rs](https://github.com/sseemayer/keepass-rs)
 - [keepass-diff](https://github.com/Narigo/keepass-diff)
 
+### The CLI crate I used
 
+I used [structopt](https://github.com/TeXitoi/structopt).
