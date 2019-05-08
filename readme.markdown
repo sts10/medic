@@ -20,11 +20,14 @@ USAGE:
     medic [FLAGS] [OPTIONS] <KEEPASS DATABASE FILE>
 
 FLAGS:
-    -c, --checks     Perform additional checks for weak and duplicate passwords.
-    -d, --debug      Activate debug mode
-        --help       Prints help information
-    -o, --online     Set whether to check hashes online via the HaveIBeenPwned API
-    -V, --version    Prints version information
+    -d, --duplicate    Check database for duplicate passwords
+    -w, --weak         Check database for weak passwords
+        --help         Prints help information
+        --online       Check passwords against breached passwords online via the HaveIBeenPwned API. More info here:
+                       https://www.troyhunt.com/ive-
+                       just-launched-pwned-passwords-version-2/#cloudflareprivacyandkanonymity
+    -V, --version      Prints version information
+    -v, --verbose      Give verbose output
 
 OPTIONS:
     -h, --hashfile <hash_file>    Provide password hash file to check database against. To download a copy of very large
@@ -39,15 +42,15 @@ ARGS:
 
 ### Examples
 
-- `medic -h=../hibp/pwned-passwords-sha1-ordered-by-count-v4.txt test_db.kdbx` checks the passwords of `test_db.kdbx` against the hashes `../hibp/pwned-passwords-sha1-ordered-by-count-v4.txt`, which is a large text file of password hashes. Medic will display any of the accounts in the `test_db.kdbx` with passwords that appear in the list.
+- `medic -h=../pwned-passwords-sha1-ordered-by-count-v4.txt test_db.kdbx` checks the passwords of `test_db.kdbx` against the hashes `../pwned-passwords-sha1-ordered-by-count-v4.txt`, which is a large text file of password hashes. Medic will display any of the accounts in the `test_db.kdbx` with passwords that appear in the list.
 
-- `medic -o -c test.kdbx` checks the passwords of `test.kdbx` using the HaveIBeenPwned API, as well as looks for weak and duplicate passwords.
+- `medic -o -dw test.kdbx` checks the passwords of `test.kdbx` using the HaveIBeenPwned API, as well as looks for weak and duplicate passwords.
 
-- `medic -o -c -k=test-files/test_key_file -d test-files/test_db.kdbx` checks the passwords of `test_db.kdbx` -- which requires key file `test_key_file` -- using the HaveIBeenPwned API, as well as looks for weak and duplicate passwords. 
+- `medic -o -w -k=test-files/test_key_file -d test-files/test_db.kdbx` checks the passwords of `test_db.kdbx` -- which requires key file `test_key_file` -- using the HaveIBeenPwned API, as well as looks for weak passwords. 
 
-- `medic -c test.kdbx` checks the passwords of `test.kdbx` for weak and duplicate passwords.
+- `medic -dw test.kdbx` checks the passwords of `test.kdbx` for weak and duplicate passwords.
 
-- `medic -c -h=pwnedpasswords.txt exported_csv_file.csv` checks an exported csv file against the hashes in `pwnedpasswords.txt`, as well as searches for weak and/or duplicate passwords.
+- `medic -d -h=pwnedpasswords.txt exported_csv_file.csv` checks an exported csv file against the hashes in `pwnedpasswords.txt`, as well as searches for duplicate passwords.
 
 ## Installation/Setup
 
@@ -70,7 +73,7 @@ If you use either of these incompatible KDFs, you can still use this tool by eit
 3. Export your KeePass database to a CSV file (In KeePassXC: `Database` menu > "Export to CSV...") (Heads up, this file includes your passwords, so be careful). 
 4. Lock your KeePass database.
 5. Install Medic using instructions above.
-6. Run Medic by entering the following command: `medic -h=pwnedpasswords.txt -c <my-exported-database>.csv`
+6. Run Medic by entering the following command: `medic -h=pwnedpasswords.txt -dw <my-exported-database>.csv`
 7. When finished, securely delete that exported CSV file. If on MacOS, run `srm <my-exported-database>.csv`. On Ubuntu-based Linux distributions, try `shred -ufv --iterations=60 <my-exported-database>.csv`. Your sensitive data should now be safely deleted, but feel free to securely delete Medic itself if so inclined.
 
 ## To do
