@@ -4,28 +4,52 @@ A Rust CLI that provides a variety of ways to check the "health" of a given KeeP
 
 **WARNING**: This software is a work in progress and still experimental. I would **NOT** use it with real KeePass databases or passwords just yet. I wrote [a blog post about this project](https://sts10.github.io/2019/02/01/medic.html).
 
-**Medic provides four ways to check the "health" of a given KeePass database.** Here's the current menu:
+## What this does
 
-```text
-To check your KeePass database's passwords, do you want to:
+Medic can check the passwords of a given KeePass database in four ways: 
 
-==> 1. Check for weak passwords
-==> 2. Check for duplicate passwords
-==> 3. Check OFFLINE for breached passwords: Give me a database of SHA-1 hashed passwords to check your KeePass database against
-==> 4. Check ONLINE for breached passwords: I will hash your passwords and send the first 5 characters of each hash over the internet to HaveIBeenPwned, in order to check if they've been breached.
-```
-
-Option 1 uses [zxcvbn](https://github.com/dropbox/zxcvbn) to find weak passwords in the given KeePass database. 
-
-Option 2 simply finds entries which have the exact same password. (Password re-use is bad.)
-
-Option 3 requires users to download a large list of SHA-1 hashes of breached or compromised passwords. I tailored it to work with the Pwned Passwords lists from HaveIBeenPwned, which anyone can download [here](https://haveibeenpwned.com/Passwords). Medic will then display a list of any passwords from the given KeePass database that also appear in the list of breached passwords.
-
-Option 4 pings [the Pwned Passwords API](https://haveibeenpwned.com/API/v2#PwnedPasswords), sending the first 5 characters of the SHA-1 hash of each of your passwords. The HIBP API returns a number of matches, at which point the tool iterates through looking for the full hash match. If it finds a match it display that information, as well as how many times that password appears in the database. 
+1. Check passwords against the HaveIBeenPwned password database, via the [HaveIBeenPwned API](https://haveibeenpwned.com/API/v2#PwnedPasswords)
+2. Check passwords against a file of password hashes. This requires users to download a large list of SHA-1 hashes of breached or compromised passwords. I tailored it to work with the Pwned Passwords lists from HaveIBeenPwned, which anyone can download [here](https://haveibeenpwned.com/Passwords). Medic will then display a list of any passwords from the given KeePass database that also appear in the list of breached passwords.
+3. Check for weak passwords, using [zxcvbn](https://github.com/dropbox/zxcvbn)
+4. Check for duplicate passwords
 
 ## Usage
 
-### Setup 
+```text
+USAGE:
+    medic [FLAGS] [OPTIONS] <KEEPASS DATABASE FILE>
+
+FLAGS:
+    -c, --checks     Perform additional checks for weak and duplicate passwords.
+    -d, --debug      Activate debug mode
+        --help       Prints help information
+    -o, --online     Set whether to check hashes online via the HaveIBeenPwned API
+    -V, --version    Prints version information
+
+OPTIONS:
+    -h, --hashfile <hash_file>    Provide password hash file to check database against. To download a copy of very large
+                                  list of password hashes from HaveIBeenPwned, go to:
+                                  https://haveibeenpwned.com/Passwords
+    -k, --keyfile <keyfile>       Provide key file, if unlocking the KeePass databases requires one
+
+ARGS:
+    <KEEPASS DATABASE FILE>    KeePass database to check. Can either be a kdbx file or an exported CSV version of a
+                               KeePass database.
+```
+
+### Examples
+
+- `cargo run --release -- -h=../hibp/pwned-passwords-sha1-ordered-by-count-v4.txt test_db.kdbx` checks the passwords of `test_db.kdbx` against the hashes `../hibp/pwned-passwords-sha1-ordered-by-count-v4.txt`, which is a large text file of password hashes. Medic will display any of the accounts in the `test_db.kdbx` with passwords that appear in the list.
+
+- `cargo run --release -- -o -c test.kdbx` checks the passwords of `test.kdbx` using the HaveIBeenPwned API, as well as looks for weak and duplicate passwords.
+
+- `cargo run --release -- -o -c -k=test-files/test_key_file -d test-files/test_db.kdbx` checks the passwords of `test_db.kdbx` -- which requires key file `test_key_file` -- using the HaveIBeenPwned API, as well as looks for weak and duplicate passwords. 
+
+- `cargo run --release -- -c test.kdbx` checks the passwords of `test.kdbx` for weak and duplicate passwords.
+
+- `cargo run --release -- -c -h=pwnedpasswords.txt exported_csv_file.csv` checks an exported csv file against the hashes in `pwnedpasswords.txt`, as well as searches for weak and/or duplicate passwords.
+
+## Installation/Setup
 
 1. [Install Rust](https://www.rust-lang.org/tools/install) if you haven't already
 2. Clone down the repo
@@ -33,30 +57,21 @@ Option 4 pings [the Pwned Passwords API](https://haveibeenpwned.com/API/v2#Pwned
 
 \* If you're new to torrents, [Transmission](https://transmissionbt.com) is a decent choice for an application to download torrents, which apparently works on Mac and Windows. (Personally, on Kubuntu, I used [KTorrent](https://www.kde.org/applications/internet/ktorrent/).) Once you have Transmission or another torrent-handling application installed, click the green "torrent" button on [the Pwned Passwords site](https://haveibeenpwned.com/Passwords). Save the (very small) `.torrent` file to your computer, then open that file with your torrent-downloading software. You may have to click "OK" or "Start", but once you do you'll be (probably slowly) downloading hundreds of millions of hashed passwords.
 
-### Running the tool
+## Limitations 
 
-1. While in the folder of this tool, run `cargo run --release` or `cargo run`
-2. Make a choice from the presented menu (see above).
-3. Follow the subsequent instructions.
+Currently, this tool only works if your KeePass database uses the Key Derivation Function (KDF) called "AES-KDF (KDBX 3.1)". It cannot open KeePass databases that use either AES-KDF (KDBX 4) or Argon2. I believe this is a limitation of the otherwise amazing [keepass-rs crate](https://github.com/sseemayer/keepass-rs).
 
-### Paranoid mode
+If you use either of these incompatible KDFs, you can still use this tool by either (a) switching your db to "AES-KDF (KDBX 3.1)" or (b) exporting your database to a CSV file (see below).
 
-If you're worried about this tool sending any information over the internet without your knowledge, you can run it in "Paranoid mode". 
-
-In "Paranoid mode", Medic can only open KeePass databases if your computer is **disconnected** from the internet. 
-
-To run Medic in Paranoid mode, run `cargo run --release -- -p`. You'll be presented with a more-limited menu of options. Before making a menu choice, turn off your connection to the internet.
-
-### How I chose to use this tool 
+## How I choose to use this tool 
 
 1. [Download the PwnedPasswords list](https://haveibeenpwned.com/Passwords) (11 GB compressed, 22GB extracted). 
 2. Open your KeePass database in KeePassXC or whatever desktop app you use to open your database. 
 3. Export your KeePass database to a CSV file (In KeePassXC: `Database` menu > "Export to CSv...") (Heads up, this file includes your passwords, so be careful). 
 4. Lock your KeePass database.
 5. Clone down this tool and set it up following the instructions above. 
-6. Run Medic by entering the following command: `cargo run --release` 
-7. Choose to perform the offline PwnedPasswords check. Optional: Search for weak or duplicate passwords. Copy and paste results in a new, local text document.
-8. When finished, securely delete that exported CSV file. If on MacOS, run `srm <file_name>.csv`. On Ubuntu-based Linux distross, try `shred -ufv --iterations=45 <file_name>.csv`. Your sensitive data should now be safely deleted, but feel free to securely delete Medic itself if so inclined.
+6. Run Medic by entering the following command: `cargo run --release -- -h=pwnedpasswords.txt -c <my-database>.csv`
+7. When finished, securely delete that exported CSV file. If on MacOS, run `srm <file_name>.csv`. On Ubuntu-based Linux distross, try `shred -ufv --iterations=45 <file_name>.csv`. Your sensitive data should now be safely deleted, but feel free to securely delete Medic itself if so inclined.
 
 ## To do
 

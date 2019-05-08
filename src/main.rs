@@ -27,7 +27,8 @@ struct Opt {
     #[structopt(short = "c", long = "checks")]
     additional_checks: bool,
 
-    /// KeePass database to check
+    /// KeePass database to check. Can either be a kdbx file or an exported CSV version of a
+    /// KeePass database.
     #[structopt(name = "KEEPASS DATABASE FILE", parse(from_os_str))]
     keepass_db: PathBuf,
 }
