@@ -57,7 +57,7 @@ ARGS:
 
 \* If you're new to torrents, [Transmission](https://transmissionbt.com) is a decent choice for an application to download torrents, which apparently works on Mac and Windows. (Personally, on Kubuntu, I used [KTorrent](https://www.kde.org/applications/internet/ktorrent/).) Once you have Transmission or another torrent-handling application installed, click the green "torrent" button on [the Pwned Passwords site](https://haveibeenpwned.com/Passwords). Save the (very small) `.torrent` file to your computer, then open that file with your torrent-downloading software. You may have to click "OK" or "Start", but once you do you'll be (probably slowly) downloading hundreds of millions of hashed passwords.
 
-## Limitations 
+## Known Issues/Limitations 
 
 Currently, this tool only works if your KeePass database uses the Key Derivation Function (KDF) called "AES-KDF (KDBX 3.1)". It cannot open KeePass databases that use either AES-KDF (KDBX 4) or Argon2. I believe this is a limitation of the otherwise amazing [keepass-rs crate](https://github.com/sseemayer/keepass-rs).
 
@@ -71,15 +71,16 @@ If you use either of these incompatible KDFs, you can still use this tool by eit
 4. Lock your KeePass database.
 5. Clone down this tool and set it up following the instructions above. 
 6. Run Medic by entering the following command: `cargo run --release -- -h=pwnedpasswords.txt -c <my-exported-database>.csv`
-7. When finished, securely delete that exported CSV file. If on MacOS, run `srm <file_name>.csv`. On Ubuntu-based Linux distross, try `shred -ufv --iterations=45 <file_name>.csv`. Your sensitive data should now be safely deleted, but feel free to securely delete Medic itself if so inclined.
+7. When finished, securely delete that exported CSV file. If on MacOS, run `srm <my-exported-database>.csv`. On Ubuntu-based Linux distributions, try `shred -ufv --iterations=60 <my-exported-database>.csv`. Your sensitive data should now be safely deleted, but feel free to securely delete Medic itself if so inclined.
 
 ## To do
 
-1. Better error handling
+1. Better error handling (especially if user gets CLI arguments wrong or is using an incompatible KDF)
 2. Write more tests
 3. Handle entries with blank passwords better
-4. Offer an option to check for _similar_ passwords (maybe using [zxcvbn](https://github.com/shssoichiro/zxcvbn-rs)?)
-5. Design/commission a logo?!
+4. Offer real packaging options?
+5. Offer an option to check for _similar_ passwords (maybe using [zxcvbn](https://github.com/shssoichiro/zxcvbn-rs)?)
+6. Design/commission a logo?!
 
 ## Reference
 
