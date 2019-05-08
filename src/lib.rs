@@ -10,17 +10,15 @@ extern crate zxcvbn;
 use indicatif::{ProgressBar, ProgressStyle};
 use keepass::{Database, Node};
 use std::collections::HashMap;
+// use std::ffi::OsStr;
 use std::fs::File;
 use std::io;
 use std::io::prelude::Read;
 use std::io::BufRead;
 use std::io::BufReader;
 use std::path::Path;
+use std::path::PathBuf;
 use zxcvbn::zxcvbn;
-
-pub fn is_allowed_access_to_user_passwords(paranoid_mode: bool) -> bool {
-    !(paranoid_mode && has_internet_connection())
-}
 
 #[derive(Debug, Clone)]
 pub struct Entry {
@@ -51,8 +49,8 @@ pub fn get_file_extension(file_path: &str) -> &str {
         .trim_matches(|c| c == '\'' || c == ' ')
 }
 
-pub fn get_entries(file_path: &str, keyfile_path: Option<&str>) -> Vec<Entry> {
-    let file_extension = get_file_extension(file_path);
+pub fn get_entries(file_path: PathBuf, keyfile_path: Option<PathBuf>) -> Vec<Entry> {
+    let file_extension = file_path.extension().unwrap().to_str().unwrap();
 
     let db_pass: Option<String> = if file_extension != "csv" {
         Some(
@@ -73,12 +71,13 @@ pub fn get_entries(file_path: &str, keyfile_path: Option<&str>) -> Vec<Entry> {
 }
 
 fn unlock_keepass_database(
-    file_path: &str,
+    path: PathBuf,
     db_pass: String,
-    keyfile_path: Option<&str>,
+    keyfile_path: Option<PathBuf>,
 ) -> keepass::Database {
-    let path = std::path::Path::new(file_path);
-    let mut keyfile = keyfile_path.map(|kfp| File::open(std::path::Path::new(kfp)).unwrap());
+    // let path = std::path::Path::new(file_path);
+    // let mut keyfile = keyfile_path.map(|kfp| File::open(std::path::Path::new(kfp)).unwrap());
+    let mut keyfile = keyfile_path.map(|kfp| File::open(kfp).unwrap());
 
     match Database::open(
         &mut File::open(path).unwrap(),               // the database
@@ -87,19 +86,15 @@ fn unlock_keepass_database(
     ) {
         Ok(db) => db,
         Err(_e) => {
-            println!(
-                "\nError opening database. Maybe you have a keyfile? If so, enter its file path:"
-            );
-            let keyfile_path = get_file_path().unwrap();
-            unlock_keepass_database(file_path, db_pass, Some(&keyfile_path))
+            panic!("\nError opening database. ");
         }
     }
 }
 
 fn build_entries_from_keepass_db(
-    file_path: &str,
+    file_path: PathBuf,
     db_pass: String,
-    keyfile_path: Option<&str>,
+    keyfile_path: Option<PathBuf>,
 ) -> Vec<Entry> {
     let mut entries: Vec<Entry> = vec![];
 
@@ -132,7 +127,7 @@ fn build_entries_from_keepass_db(
     entries
 }
 
-fn build_entries_from_csv(file_path: &str) -> Vec<Entry> {
+fn build_entries_from_csv(file_path: PathBuf) -> Vec<Entry> {
     let mut entries: Vec<Entry> = vec![];
 
     let file = File::open(file_path).unwrap();
@@ -186,37 +181,6 @@ pub fn check_database_online(entries: &[Entry]) -> Vec<Entry> {
     breached_entries
 }
 
-pub fn read_mode_and_explain(args: &[String]) -> bool {
-    if args.len() > 1 && args[1].contains("-p") {
-        println!("\nStarting Medic in PARANOID mode...");
-        println!("In Paranoid mode, Medic can only open KeePass databases if it CANNOT connect to the interent.");
-        println!("Please disconnect your internet now.");
-        true
-    } else {
-        false
-    }
-}
-
-// might be able to make this not public
-pub fn has_internet_connection() -> bool {
-    let urls_to_test = [
-        "https://google.com".to_string(),
-        "https://dropbox.com".to_string(),
-        "https://github.com".to_string(),
-        "https://api.pwnedpasswords.com".to_string(),
-    ];
-
-    for url in &urls_to_test {
-        let response = match reqwest::get(url) {
-            Ok(res) => res,
-            Err(_e) => continue,
-        };
-        if response.status().to_string() == "200 OK" {
-            return true;
-        }
-    }
-    false
-}
 pub fn confirm_online_check() -> bool {
     // Confirm that user for sure wants to check online
     println!("\n\nHeads up! I'll be sending the first 5 characters of the hashes of your passwords over the internet to HaveIBeenPwned. \nType allow to allow this");
@@ -252,8 +216,8 @@ pub fn check_password_online(pass: &str) -> usize {
 }
 
 pub fn check_database_offline(
-    passwords_file_path: &str,
-    entries: Vec<Entry>,
+    passwords_file_path: PathBuf,
+    entries: &Vec<Entry>,
     progress_bar: bool,
 ) -> io::Result<Vec<Entry>> {
     let mut this_chunk = Vec::new();
@@ -400,10 +364,10 @@ mod integration_tests {
     use super::*;
 
     fn make_test_entries_from_keepass_database_requiring_keyfile() -> Vec<Entry> {
-        let keepass_db_file_path = "test-files/test_db.kdbx".to_string();
+        let keepass_db_file_path = PathBuf::from("test-files/test_db.kdbx");
         let test_db_pass = "password".to_string();
-        let test_keyfile = Some("test-files/test_key_file");
-        build_entries_from_keepass_db(&keepass_db_file_path, test_db_pass, test_keyfile)
+        let test_keyfile = Some(PathBuf::from("test-files/test_key_file"));
+        build_entries_from_keepass_db(keepass_db_file_path, test_db_pass, test_keyfile)
     }
 
     #[test]
@@ -419,10 +383,10 @@ mod integration_tests {
     fn can_check_keepass_db_against_offline_list_of_hashes() {
         let entries = make_test_entries_from_keepass_database_requiring_keyfile();
         let passwords_file_path =
-            "../hibp/pwned-passwords-sha1-ordered-by-count-v4.txt".to_string();
+            PathBuf::from("../hibp/pwned-passwords-sha1-ordered-by-count-v4.txt");
 
         let breached_entries =
-            check_database_offline(&passwords_file_path, entries, false).unwrap();
+            check_database_offline(passwords_file_path, &entries, false).unwrap();
         assert_eq!(breached_entries.len(), 3);
     }
 
@@ -449,9 +413,9 @@ mod integration_tests {
     // #######################################################################
 
     fn make_test_entries_from_keepass_database_not_requiring_keyfile() -> Vec<Entry> {
-        let keepass_db_file_path = "test-files/test_db_no_keyfile.kdbx".to_string();
+        let keepass_db_file_path = PathBuf::from("test-files/test_db_no_keyfile.kdbx");
         let test_db_pass = "password".to_string();
-        build_entries_from_keepass_db(&keepass_db_file_path, test_db_pass, None)
+        build_entries_from_keepass_db(keepass_db_file_path, test_db_pass, None)
     }
 
     #[test]
