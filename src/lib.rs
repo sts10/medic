@@ -74,8 +74,8 @@ fn unlock_keepass_database(
         keyfile.as_mut().map(|f| f as &mut dyn Read), // keyfile
     ) {
         Ok(db) => db,
-        Err(_e) => {
-            panic!("\nError opening database. ");
+        Err(e) => {
+            panic!("\nError opening database: {}", e);
         }
     }
 }
