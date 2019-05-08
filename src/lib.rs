@@ -26,6 +26,13 @@ pub struct Entry {
     pass: String,
     digest: String,
 }
+
+#[derive(Debug, PartialEq)]
+pub enum VisibilityPreference {
+    Show,
+    Hide,
+}
+
 impl std::fmt::Display for Entry {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         if self.title != "" {
@@ -205,7 +212,7 @@ pub fn check_password_online(pass: &str) -> usize {
 pub fn check_database_offline(
     passwords_file_path: PathBuf,
     entries: &[Entry],
-    progress_bar: bool,
+    progress_bar_visibility: VisibilityPreference,
 ) -> io::Result<Vec<Entry>> {
     let mut this_chunk = Vec::new();
     let mut breached_entries: Vec<Entry> = Vec::new();
@@ -221,7 +228,7 @@ pub fn check_database_offline(
     let chunk_size = 500_000_000; // real 1m7.686s
 
     let pb = ProgressBar::new(passwords_file_size as u64);
-    if progress_bar {
+    if progress_bar_visibility == VisibilityPreference::Show {
         pb.set_style(
             ProgressStyle::default_bar()
                 .template("{spinner} [{elapsed_precise}] [{bar:40}] ({eta})"),
@@ -240,13 +247,13 @@ pub fn check_database_offline(
                 }
                 Err(_e) => eprintln!("found no breached entries in this chunk"),
             }
-            if progress_bar {
+            if progress_bar_visibility == VisibilityPreference::Show {
                 pb.inc(chunk_size as u64);
             }
             this_chunk.clear();
         }
     }
-    if progress_bar {
+    if progress_bar_visibility == VisibilityPreference::Show {
         pb.finish_with_message("Done.");
     }
     Ok(breached_entries)
@@ -363,7 +370,8 @@ mod integration_tests {
             PathBuf::from("../hibp/pwned-passwords-sha1-ordered-by-count-v4.txt");
 
         let breached_entries =
-            check_database_offline(passwords_file_path, &entries, false).unwrap();
+            check_database_offline(passwords_file_path, &entries, VisibilityPreference::Hide)
+                .unwrap();
         assert_eq!(breached_entries.len(), 3);
     }
 

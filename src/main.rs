@@ -71,7 +71,8 @@ fn main() {
     }
     if let Some(file_path) = hash_file {
         println!("Checking KeePass database against provided hash file");
-        let breached_entries = check_database_offline(file_path, &entries, true).unwrap();
+        let breached_entries =
+            check_database_offline(file_path, &entries, VisibilityPreference::Show).unwrap();
         present_breached_entries(&breached_entries);
     }
     if check_online {
