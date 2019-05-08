@@ -42,11 +42,13 @@ ARGS:
 
 ### Examples
 
+- `medic --online test.kdbx` checks the passwords of `test.kdbx` using the HaveIBeenPwned API, as well as looks for weak and duplicate passwords.
+
+- `medic --online -dw test.kdbx` checks the passwords of `test.kdbx` using the HaveIBeenPwned API, as well as looks for weak and duplicate passwords.
+
+- `medic --online -w -k=test-files/test_key_file test-files/test_db.kdbx` checks the passwords of `test_db.kdbx` -- which requires key file `test_key_file` -- using the HaveIBeenPwned API, as well as looks for weak passwords. 
+
 - `medic -h=../pwned-passwords-sha1-ordered-by-count-v4.txt test_db.kdbx` checks the passwords of `test_db.kdbx` against the hashes `../pwned-passwords-sha1-ordered-by-count-v4.txt`, which is a large text file of password hashes. Medic will display any of the accounts in the `test_db.kdbx` with passwords that appear in the list.
-
-- `medic -o -dw test.kdbx` checks the passwords of `test.kdbx` using the HaveIBeenPwned API, as well as looks for weak and duplicate passwords.
-
-- `medic -o -w -k=test-files/test_key_file -d test-files/test_db.kdbx` checks the passwords of `test_db.kdbx` -- which requires key file `test_key_file` -- using the HaveIBeenPwned API, as well as looks for weak passwords. 
 
 - `medic -dw test.kdbx` checks the passwords of `test.kdbx` for weak and duplicate passwords.
 
