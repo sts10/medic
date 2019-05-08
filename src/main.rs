@@ -44,6 +44,7 @@ fn main() {
     if hash_file == None && !check_online && !opt.additional_checks {
         println!("Whoops! I have nothing the check against");
         println!("You must either:\n1. Provide a hash file to check against \nOR\n2. Use the --online flag to check your passwords online via HaveIBeenPwned API");
+        println!("Run --help for more information");
         return;
     }
     let entries: Option<Vec<Entry>> = Some(get_entries(keepass_db_file_path, keyfile));
