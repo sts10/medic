@@ -6,7 +6,6 @@ extern crate rpassword;
 extern crate sha1;
 extern crate zxcvbn;
 
-// use self::csv::StringRecord;
 use indicatif::{ProgressBar, ProgressStyle};
 use keepass::{Database, Node};
 use std::collections::HashMap;
@@ -16,7 +15,6 @@ use std::io;
 use std::io::prelude::Read;
 use std::io::BufRead;
 use std::io::BufReader;
-use std::path::Path;
 use std::path::PathBuf;
 use zxcvbn::zxcvbn;
 
@@ -38,15 +36,6 @@ impl std::fmt::Display for Entry {
             write!(f, "{}", self.username)
         }
     }
-}
-
-pub fn get_file_extension(file_path: &str) -> &str {
-    Path::new(file_path)
-        .extension()
-        .unwrap()
-        .to_str()
-        .unwrap()
-        .trim_matches(|c| c == '\'' || c == ' ')
 }
 
 pub fn get_entries(file_path: PathBuf, keyfile_path: Option<PathBuf>) -> Vec<Entry> {
@@ -217,7 +206,7 @@ pub fn check_password_online(pass: &str) -> usize {
 
 pub fn check_database_offline(
     passwords_file_path: PathBuf,
-    entries: &Vec<Entry>,
+    entries: &[Entry],
     progress_bar: bool,
 ) -> io::Result<Vec<Entry>> {
     let mut this_chunk = Vec::new();
@@ -315,6 +304,7 @@ pub fn present_duplicated_entries<S: ::std::hash::BuildHasher>(
 }
 
 pub fn check_for_and_display_weak_passwords(entries: &[Entry]) {
+    println!("\n--------------------------------");
     for entry in entries {
         let estimate = zxcvbn(&entry.pass, &[&entry.title, &entry.username]).unwrap();
         if estimate.score < 4 {
@@ -343,18 +333,7 @@ fn give_feedback(feedback: Option<zxcvbn::feedback::Feedback>) {
 pub fn gets() -> io::Result<String> {
     let mut input = String::new();
     match io::stdin().read_line(&mut input) {
-        Ok(_n) => Ok(input.trim_end_matches("\n").to_string()),
-        Err(error) => Err(error),
-    }
-}
-
-pub fn get_file_path() -> io::Result<String> {
-    let mut input = String::new();
-    match io::stdin().read_line(&mut input) {
-        Ok(_n) => Ok(input
-            .trim_end_matches("\n")
-            .trim_matches(|c| c == '\'' || c == ' ')
-            .to_string()),
+        Ok(_n) => Ok(input.trim_end_matches('\n').to_string()),
         Err(error) => Err(error),
     }
 }
