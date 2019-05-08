@@ -64,8 +64,6 @@ fn unlock_keepass_database(
     db_pass: String,
     keyfile_path: Option<PathBuf>,
 ) -> keepass::Database {
-    // let path = std::path::Path::new(file_path);
-    // let mut keyfile = keyfile_path.map(|kfp| File::open(std::path::Path::new(kfp)).unwrap());
     let mut keyfile = keyfile_path.map(|kfp| File::open(kfp).unwrap());
 
     match Database::open(
