@@ -171,14 +171,17 @@ pub fn present_breached_entries(
     output_dest: &Destination,
 ) -> std::io::Result<()> {
     if !breached_entries.is_empty() {
-        write_to(output_dest, format!("The following entries have passwords on contained in the list of breached passwords:"))?;
+        write_to(
+            output_dest,
+            "The following entries have passwords on contained in the list of breached passwords:",
+        )?;
         for breached_entry in breached_entries {
             write_to(output_dest, format!("   - {}", breached_entry))?;
         }
     } else {
         write_to(
             output_dest,
-            format!("I didn't find any of your passwords on the breached passwords list"),
+            "I didn't find any of your passwords on the breached passwords list",
         )?;
     }
     Ok(())
@@ -195,7 +198,7 @@ pub fn check_database_online(entries: &[Entry]) -> Vec<Entry> {
     breached_entries
 }
 
-pub fn confirm_online_check() -> bool {
+pub fn _confirm_online_check() -> bool {
     // Confirm that user for sure wants to check online
     println!("\n\nHeads up! I'll be sending the first 5 characters of the hashes of your passwords over the internet to HaveIBeenPwned. \nType allow to allow this");
     if gets().unwrap() == "allow" {
@@ -316,7 +319,7 @@ pub fn present_duplicated_entries<S: ::std::hash::BuildHasher>(
         if group.len() > 1 {
             write_to(
                 output_dest,
-                format!("The following entries have the same password:\n"),
+                "The following entries have the same password:\n",
             )?;
             for entry in group {
                 write_to(output_dest, format!("   - {}", entry))?;
@@ -328,28 +331,24 @@ pub fn present_duplicated_entries<S: ::std::hash::BuildHasher>(
     if has_duplicated_entries {
         write_to(
             output_dest,
-            format!("\nPassword re-use is bad. Change passwords until you have no duplicates."),
-        )?
+            "\nPassword re-use is bad. Change passwords until you have no duplicates.",
+        )
     } else {
-        write_to(
-            output_dest,
-            format!("\nGood job -- no password reuse detected!"),
-        )?
+        write_to(output_dest, "\nGood job -- no password reuse detected!")
     }
-    Ok(())
 }
 
 pub fn check_for_and_display_weak_passwords(
     entries: &[Entry],
     output_dest: &Destination,
 ) -> std::io::Result<()> {
-    write_to(output_dest, format!("\n--------------------------------"))?;
+    write_to(output_dest, "\n--------------------------------")?;
     for entry in entries {
         let estimate = zxcvbn(&entry.pass, &[&entry.title, &entry.username]).unwrap();
         if estimate.score < 4 {
             write_to(output_dest, format!("Your password for {} is weak.", entry))?;
             give_feedback(estimate.feedback, output_dest)?;
-            write_to(output_dest, format!("\n--------------------------------"))?;
+            write_to(output_dest, "\n--------------------------------")?;
         }
     }
     Ok(())
@@ -364,12 +363,12 @@ fn give_feedback(
             if let Some(warning) = feedback.warning {
                 write_to(output_dest, format!("Warning: {}\n", warning))?;
             }
-            write_to(output_dest, format!("Suggestions:"))?;
+            write_to(output_dest, "Suggestions:")?;
             for suggestion in feedback.suggestions {
                 write_to(output_dest, format!("   - {}", suggestion))?;
             }
         }
-        None => write_to(output_dest, format!("No suggestions."))?,
+        None => write_to(output_dest, "No suggestions.")?,
     }
     Ok(())
 }
@@ -397,7 +396,6 @@ pub fn create_file(dest: &Destination) -> std::io::Result<()> {
                 }
                 Err(_e) => {
                     File::create(file_path)?;
-                    ()
                 }
             }
             Ok(())
@@ -405,19 +403,21 @@ pub fn create_file(dest: &Destination) -> std::io::Result<()> {
         Destination::Terminal => Ok(()),
     }
 }
-pub fn write_to(dest: &Destination, output: String) -> std::io::Result<()> {
+pub fn write_to<StringLike: Into<String>>(
+    dest: &Destination,
+    output: StringLike,
+) -> std::io::Result<()> {
     match dest {
         Destination::FilePath(file_path) => {
             let mut f = OpenOptions::new().append(true).open(file_path).unwrap();
-            writeln!(f, "{}", &output)?;
-            Ok(())
+            writeln!(f, "{}", &output.into())
+            // Ok(())
         }
         Destination::Terminal => {
             // println!("{}", &output);
             let stdout = io::stdout(); // get the global stdout entity
             let mut handle = stdout.lock(); // acquire a lock on it
-            writeln!(handle, "{}", output)?;
-            Ok(())
+            writeln!(handle, "{}", output.into())
         }
     }
 }
