@@ -166,18 +166,22 @@ fn build_entries_from_csv(file_path: PathBuf) -> Vec<Entry> {
     }
     entries
 }
-pub fn present_breached_entries(breached_entries: &[Entry], output_dest: &Destination) {
+pub fn present_breached_entries(
+    breached_entries: &[Entry],
+    output_dest: &Destination,
+) -> std::io::Result<()> {
     if !breached_entries.is_empty() {
-        write_to(output_dest, format!("The following entries have passwords on contained in the list of breached passwords:"));
+        write_to(output_dest, format!("The following entries have passwords on contained in the list of breached passwords:"))?;
         for breached_entry in breached_entries {
-            write_to(output_dest, format!("   - {}", breached_entry));
+            write_to(output_dest, format!("   - {}", breached_entry))?;
         }
     } else {
         write_to(
             output_dest,
             format!("I didn't find any of your passwords on the breached passwords list"),
-        )
+        )?;
     }
+    Ok(())
 }
 
 pub fn check_database_online(entries: &[Entry]) -> Vec<Entry> {
@@ -306,16 +310,16 @@ pub fn make_digest_map(entries: &[Entry]) -> io::Result<HashMap<String, Vec<Entr
 pub fn present_duplicated_entries<S: ::std::hash::BuildHasher>(
     digest_map: HashMap<String, Vec<Entry>, S>,
     output_dest: &Destination,
-) {
+) -> std::io::Result<()> {
     let mut has_duplicated_entries = false;
     for group in digest_map.values() {
         if group.len() > 1 {
             write_to(
                 output_dest,
                 format!("The following entries have the same password:\n"),
-            );
+            )?;
             for entry in group {
-                write_to(output_dest, format!("   - {}", entry));
+                write_to(output_dest, format!("   - {}", entry))?;
             }
             has_duplicated_entries = true;
         }
@@ -325,40 +329,49 @@ pub fn present_duplicated_entries<S: ::std::hash::BuildHasher>(
         write_to(
             output_dest,
             format!("\nPassword re-use is bad. Change passwords until you have no duplicates."),
-        )
+        )?
     } else {
         write_to(
             output_dest,
             format!("\nGood job -- no password reuse detected!"),
-        )
+        )?
     }
+    Ok(())
 }
 
-pub fn check_for_and_display_weak_passwords(entries: &[Entry], output_dest: &Destination) {
-    write_to(output_dest, format!("\n--------------------------------"));
+pub fn check_for_and_display_weak_passwords(
+    entries: &[Entry],
+    output_dest: &Destination,
+) -> std::io::Result<()> {
+    write_to(output_dest, format!("\n--------------------------------"))?;
     for entry in entries {
         let estimate = zxcvbn(&entry.pass, &[&entry.title, &entry.username]).unwrap();
         if estimate.score < 4 {
-            write_to(output_dest, format!("Your password for {} is weak.", entry));
-            give_feedback(estimate.feedback, output_dest);
-            write_to(output_dest, format!("\n--------------------------------"));
+            write_to(output_dest, format!("Your password for {} is weak.", entry))?;
+            give_feedback(estimate.feedback, output_dest)?;
+            write_to(output_dest, format!("\n--------------------------------"))?;
         }
     }
+    Ok(())
 }
 
-fn give_feedback(feedback: Option<zxcvbn::feedback::Feedback>, output_dest: &Destination) {
+fn give_feedback(
+    feedback: Option<zxcvbn::feedback::Feedback>,
+    output_dest: &Destination,
+) -> std::io::Result<()> {
     match feedback {
         Some(feedback) => {
             if let Some(warning) = feedback.warning {
-                write_to(output_dest, format!("Warning: {}\n", warning));
+                write_to(output_dest, format!("Warning: {}\n", warning))?;
             }
-            write_to(output_dest, format!("Suggestions:"));
+            write_to(output_dest, format!("Suggestions:"))?;
             for suggestion in feedback.suggestions {
-                write_to(output_dest, format!("   - {}", suggestion));
+                write_to(output_dest, format!("   - {}", suggestion))?;
             }
         }
-        None => write_to(output_dest, format!("No suggestions.")),
+        None => write_to(output_dest, format!("No suggestions."))?,
     }
+    Ok(())
 }
 
 pub fn gets() -> io::Result<String> {
@@ -392,19 +405,19 @@ pub fn create_file(dest: &Destination) -> std::io::Result<()> {
         Destination::Terminal => Ok(()),
     }
 }
-pub fn write_to(dest: &Destination, output: String) -> () {
+pub fn write_to(dest: &Destination, output: String) -> std::io::Result<()> {
     match dest {
         Destination::FilePath(file_path) => {
             let mut f = OpenOptions::new().append(true).open(file_path).unwrap();
-            writeln!(f, "{}", &output);
-            ()
+            writeln!(f, "{}", &output)?;
+            Ok(())
         }
         Destination::Terminal => {
             // println!("{}", &output);
             let stdout = io::stdout(); // get the global stdout entity
             let mut handle = stdout.lock(); // acquire a lock on it
-            writeln!(handle, "{}", output);
-            ()
+            writeln!(handle, "{}", output)?;
+            Ok(())
         }
     }
 }

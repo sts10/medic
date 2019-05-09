@@ -79,17 +79,20 @@ fn main() {
     };
 
     if opt.check_weak {
-        check_for_and_display_weak_passwords(&entries, &output_dest);
+        check_for_and_display_weak_passwords(&entries, &output_dest)
+            .expect("Error finding weak passwords");
     }
     if opt.check_duplicate {
         let digest_map = make_digest_map(&entries).unwrap();
-        present_duplicated_entries(digest_map, &output_dest);
+        present_duplicated_entries(digest_map, &output_dest)
+            .expect("Error presenting duplicate passwords");
     }
     if let Some(file_path) = hash_file {
         println!("Checking KeePass database against provided hash file");
         let breached_entries =
             check_database_offline(file_path, &entries, VisibilityPreference::Show).unwrap();
-        present_breached_entries(&breached_entries, &output_dest);
+        present_breached_entries(&breached_entries, &output_dest)
+            .expect("Error presenting breached entries");
     }
     if check_online {
         println!(
@@ -99,7 +102,8 @@ fn main() {
             Ok(answer) => {
                 if answer == "y" {
                     let breached_entries = check_database_online(&entries);
-                    present_breached_entries(&breached_entries, &output_dest);
+                    present_breached_entries(&breached_entries, &output_dest)
+                        .expect("Error presenting breached errors");
                 }
             }
             Err(e) => eprintln!("Error reading your answer: {}", e),
