@@ -15,8 +15,12 @@ use std::io;
 use std::io::prelude::Read;
 use std::io::BufRead;
 use std::io::BufReader;
+use std::io::Write;
 use std::path::PathBuf;
 use zxcvbn::zxcvbn;
+
+use std::fs::OpenOptions;
+// use std::io::prelude::*;
 
 #[derive(Debug, Clone)]
 pub struct Entry {
@@ -27,6 +31,17 @@ pub struct Entry {
     digest: String,
 }
 
+// #[derive(Debug)]
+// pub enum Destination<'a> {
+//     Terminal,
+//     FilePath(&'a str),
+// }
+
+#[derive(Debug)]
+pub enum Destination {
+    Terminal,
+    FilePath(String),
+}
 #[derive(Debug, PartialEq)]
 pub enum VisibilityPreference {
     Show,
@@ -151,16 +166,18 @@ fn build_entries_from_csv(file_path: PathBuf) -> Vec<Entry> {
     }
     entries
 }
-pub fn present_breached_entries(breached_entries: &[Entry]) {
+pub fn present_breached_entries(breached_entries: &[Entry], output_dest: &Destination) {
     if !breached_entries.is_empty() {
-        println!(
-            "The following entries have passwords on contained in the list of breached passwords:"
-        );
+        write_to(output_dest, format!("The following entries have passwords on contained in the list of breached passwords:")).unwrap();
         for breached_entry in breached_entries {
-            println!("   - {}", breached_entry);
+            write_to(output_dest, format!("   - {}", breached_entry)).unwrap();
         }
     } else {
-        println!("I didn't find any of your passwords on the breached passwords list");
+        write_to(
+            output_dest,
+            format!("I didn't find any of your passwords on the breached passwords list"),
+        )
+        .unwrap();
     }
 }
 
@@ -289,49 +306,62 @@ pub fn make_digest_map(entries: &[Entry]) -> io::Result<HashMap<String, Vec<Entr
 // Clippy told me "warning: parameter of type `HashMap` should be generalized over different hashers"
 pub fn present_duplicated_entries<S: ::std::hash::BuildHasher>(
     digest_map: HashMap<String, Vec<Entry>, S>,
+    output_dest: &Destination,
 ) {
     let mut has_duplicated_entries = false;
     for group in digest_map.values() {
         if group.len() > 1 {
-            println!("The following entries have the same password:\n");
+            write_to(
+                output_dest,
+                format!("The following entries have the same password:\n"),
+            )
+            .unwrap();
             for entry in group {
-                println!("   - {}", entry);
+                write_to(output_dest, format!("   - {}", entry)).unwrap();
             }
             has_duplicated_entries = true;
         }
     }
 
     if has_duplicated_entries {
-        println!("\nPassword re-use is bad. Change passwords until you have no duplicates.");
+        write_to(
+            output_dest,
+            format!("\nPassword re-use is bad. Change passwords until you have no duplicates."),
+        )
+        .unwrap();
     } else {
-        println!("\nGood job -- no password reuse detected!");
+        write_to(
+            output_dest,
+            format!("\nGood job -- no password reuse detected!"),
+        )
+        .unwrap();
     }
 }
 
-pub fn check_for_and_display_weak_passwords(entries: &[Entry]) {
-    println!("\n--------------------------------");
+pub fn check_for_and_display_weak_passwords(entries: &[Entry], output_dest: &Destination) {
+    write_to(output_dest, format!("\n--------------------------------")).unwrap();
     for entry in entries {
         let estimate = zxcvbn(&entry.pass, &[&entry.title, &entry.username]).unwrap();
         if estimate.score < 4 {
-            println!("Your password for {} is weak.", entry);
-            give_feedback(estimate.feedback);
-            println!("\n--------------------------------");
+            write_to(output_dest, format!("Your password for {} is weak.", entry)).unwrap();
+            give_feedback(estimate.feedback, output_dest);
+            write_to(output_dest, format!("\n--------------------------------")).unwrap();
         }
     }
 }
 
-fn give_feedback(feedback: Option<zxcvbn::feedback::Feedback>) {
+fn give_feedback(feedback: Option<zxcvbn::feedback::Feedback>, output_dest: &Destination) {
     match feedback {
         Some(feedback) => {
             if let Some(warning) = feedback.warning {
-                println!("Warning: {}\n", warning);
+                write_to(output_dest, format!("Warning: {}\n", warning)).unwrap();
             }
-            println!("Suggestions:");
+            write_to(output_dest, format!("Suggestions:")).unwrap();
             for suggestion in feedback.suggestions {
-                println!("   - {}", suggestion)
+                write_to(output_dest, format!("   - {}", suggestion)).unwrap();
             }
         }
-        None => println!("No suggestions."),
+        None => write_to(output_dest, format!("No suggestions.")).unwrap(),
     }
 }
 
@@ -343,6 +373,31 @@ pub fn gets() -> io::Result<String> {
     }
 }
 
+pub fn create_file(dest: &Destination) -> std::io::Result<()> {
+    match dest {
+        Destination::FilePath(file_path) => {
+            let _f = OpenOptions::new().create(true).open(file_path).unwrap();
+            Ok(())
+        }
+        Destination::Terminal => Ok(()),
+    }
+}
+pub fn write_to(dest: &Destination, output: String) -> std::io::Result<()> {
+    match dest {
+        Destination::FilePath(file_path) => {
+            let mut f = OpenOptions::new().append(true).open(file_path).unwrap();
+            writeln!(f, "{}", &output)?;
+            Ok(())
+        }
+        Destination::Terminal => {
+            // println!("{}", &output);
+            let stdout = io::stdout(); // get the global stdout entity
+            let mut handle = stdout.lock(); // acquire a lock on it
+            writeln!(handle, "{}", output)?;
+            Ok(())
+        }
+    }
+}
 #[cfg(test)]
 mod integration_tests {
     use super::*;

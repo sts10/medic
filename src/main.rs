@@ -1,7 +1,12 @@
 extern crate structopt;
 use medic::*;
+// use std::fs::File;
+// use std::fs::OpenOptions;
 use std::path::PathBuf;
 use structopt::StructOpt;
+// use std::io::prelude::*;
+// use std::ffi::OsStr;
+// use std::io::{self, Write};
 
 /// Medic
 #[derive(StructOpt, Debug)]
@@ -35,22 +40,13 @@ struct Opt {
     check_weak: bool,
 
     /// Print results of health check to a file
-    #[structopt(short = "o", long = "output", parse(from_os_str))]
-    output: Option<PathBuf>,
+    #[structopt(short = "o", long = "output")]
+    output: Option<String>,
 
     /// KeePass database to check. Can either be a kdbx file or an exported CSV version of a
     /// KeePass database.
     #[structopt(name = "KEEPASS DATABASE FILE", parse(from_os_str))]
     keepass_db: PathBuf,
-}
-
-use std::fs::File;
-use std::io::{self, Write};
-
-#[derive(Debug)]
-pub enum Destination<'a> {
-    Terminal,
-    File(&'a std::fs::File),
 }
 
 fn main() {
@@ -62,13 +58,17 @@ fn main() {
     let hash_file: Option<PathBuf> = opt.hash_file;
     let keyfile: Option<PathBuf> = opt.keyfile;
     let check_online = opt.online;
-    if opt.output.is_some() {
-        let f = File::create(file).unwrap();
-    }
-    let dest: Destination = match opt.output {
-        Some(file) => Destination::File(&f),
+    let output_dest: Destination = match opt.output {
+        Some(file_path) => Destination::FilePath(file_path),
         None => Destination::Terminal,
     };
+    match &output_dest {
+        Destination::FilePath(file_path) => {
+            create_file(&Destination::FilePath(file_path.to_string()))
+                .expect("Couldn't write to file");
+        }
+        Destination::Terminal => (),
+    }
 
     if hash_file == None && !check_online && !opt.check_duplicate && !opt.check_weak {
         println!("Whoops! I have nothing the check against");
@@ -84,17 +84,17 @@ fn main() {
     };
 
     if opt.check_weak {
-        check_for_and_display_weak_passwords(&entries);
+        check_for_and_display_weak_passwords(&entries, &output_dest);
     }
     if opt.check_duplicate {
         let digest_map = make_digest_map(&entries).unwrap();
-        present_duplicated_entries(digest_map);
+        present_duplicated_entries(digest_map, &output_dest);
     }
     if let Some(file_path) = hash_file {
         println!("Checking KeePass database against provided hash file");
         let breached_entries =
             check_database_offline(file_path, &entries, VisibilityPreference::Show).unwrap();
-        present_breached_entries(&breached_entries);
+        present_breached_entries(&breached_entries, &output_dest);
     }
     if check_online {
         println!(
@@ -104,7 +104,7 @@ fn main() {
             Ok(answer) => {
                 if answer == "y" {
                     let breached_entries = check_database_online(&entries);
-                    present_breached_entries(&breached_entries);
+                    present_breached_entries(&breached_entries, &output_dest);
                 }
             }
             Err(e) => eprintln!("Error reading your answer: {}", e),
