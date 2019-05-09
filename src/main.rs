@@ -1,12 +1,7 @@
 extern crate structopt;
 use medic::*;
-// use std::fs::File;
-// use std::fs::OpenOptions;
 use std::path::PathBuf;
 use structopt::StructOpt;
-// use std::io::prelude::*;
-// use std::ffi::OsStr;
-// use std::io::{self, Write};
 
 /// Medic
 #[derive(StructOpt, Debug)]

@@ -168,16 +168,15 @@ fn build_entries_from_csv(file_path: PathBuf) -> Vec<Entry> {
 }
 pub fn present_breached_entries(breached_entries: &[Entry], output_dest: &Destination) {
     if !breached_entries.is_empty() {
-        write_to(output_dest, format!("The following entries have passwords on contained in the list of breached passwords:")).unwrap();
+        write_to(output_dest, format!("The following entries have passwords on contained in the list of breached passwords:"));
         for breached_entry in breached_entries {
-            write_to(output_dest, format!("   - {}", breached_entry)).unwrap();
+            write_to(output_dest, format!("   - {}", breached_entry));
         }
     } else {
         write_to(
             output_dest,
             format!("I didn't find any of your passwords on the breached passwords list"),
         )
-        .unwrap();
     }
 }
 
@@ -314,10 +313,9 @@ pub fn present_duplicated_entries<S: ::std::hash::BuildHasher>(
             write_to(
                 output_dest,
                 format!("The following entries have the same password:\n"),
-            )
-            .unwrap();
+            );
             for entry in group {
-                write_to(output_dest, format!("   - {}", entry)).unwrap();
+                write_to(output_dest, format!("   - {}", entry));
             }
             has_duplicated_entries = true;
         }
@@ -328,24 +326,22 @@ pub fn present_duplicated_entries<S: ::std::hash::BuildHasher>(
             output_dest,
             format!("\nPassword re-use is bad. Change passwords until you have no duplicates."),
         )
-        .unwrap();
     } else {
         write_to(
             output_dest,
             format!("\nGood job -- no password reuse detected!"),
         )
-        .unwrap();
     }
 }
 
 pub fn check_for_and_display_weak_passwords(entries: &[Entry], output_dest: &Destination) {
-    write_to(output_dest, format!("\n--------------------------------")).unwrap();
+    write_to(output_dest, format!("\n--------------------------------"));
     for entry in entries {
         let estimate = zxcvbn(&entry.pass, &[&entry.title, &entry.username]).unwrap();
         if estimate.score < 4 {
-            write_to(output_dest, format!("Your password for {} is weak.", entry)).unwrap();
+            write_to(output_dest, format!("Your password for {} is weak.", entry));
             give_feedback(estimate.feedback, output_dest);
-            write_to(output_dest, format!("\n--------------------------------")).unwrap();
+            write_to(output_dest, format!("\n--------------------------------"));
         }
     }
 }
@@ -354,14 +350,14 @@ fn give_feedback(feedback: Option<zxcvbn::feedback::Feedback>, output_dest: &Des
     match feedback {
         Some(feedback) => {
             if let Some(warning) = feedback.warning {
-                write_to(output_dest, format!("Warning: {}\n", warning)).unwrap();
+                write_to(output_dest, format!("Warning: {}\n", warning));
             }
-            write_to(output_dest, format!("Suggestions:")).unwrap();
+            write_to(output_dest, format!("Suggestions:"));
             for suggestion in feedback.suggestions {
-                write_to(output_dest, format!("   - {}", suggestion)).unwrap();
+                write_to(output_dest, format!("   - {}", suggestion));
             }
         }
-        None => write_to(output_dest, format!("No suggestions.")).unwrap(),
+        None => write_to(output_dest, format!("No suggestions.")),
     }
 }
 
@@ -376,25 +372,39 @@ pub fn gets() -> io::Result<String> {
 pub fn create_file(dest: &Destination) -> std::io::Result<()> {
     match dest {
         Destination::FilePath(file_path) => {
-            let _f = OpenOptions::new().create(true).open(file_path).unwrap();
+            // let _f = OpenOptions::new().create(true).open(file_path).unwrap();
+            match File::open(file_path) {
+                Ok(f) => {
+                    eprintln!("File where you want to write, {:?}, already exists. Would you like to overwrite? (y/N)", f);
+                    if gets().unwrap() == "y" {
+                        File::create(file_path)?;
+                    } else {
+                        panic!("OK, exiting");
+                    }
+                }
+                Err(_e) => {
+                    File::create(file_path)?;
+                    ()
+                }
+            }
             Ok(())
         }
         Destination::Terminal => Ok(()),
     }
 }
-pub fn write_to(dest: &Destination, output: String) -> std::io::Result<()> {
+pub fn write_to(dest: &Destination, output: String) -> () {
     match dest {
         Destination::FilePath(file_path) => {
             let mut f = OpenOptions::new().append(true).open(file_path).unwrap();
-            writeln!(f, "{}", &output)?;
-            Ok(())
+            writeln!(f, "{}", &output);
+            ()
         }
         Destination::Terminal => {
             // println!("{}", &output);
             let stdout = io::stdout(); // get the global stdout entity
             let mut handle = stdout.lock(); // acquire a lock on it
-            writeln!(handle, "{}", output)?;
-            Ok(())
+            writeln!(handle, "{}", output);
+            ()
         }
     }
 }
