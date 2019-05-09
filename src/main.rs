@@ -34,11 +34,25 @@ struct Opt {
     #[structopt(short = "w", long = "weak")]
     check_weak: bool,
 
+    /// Print results of health check to a file
+    #[structopt(short = "o", long = "output", parse(from_os_str))]
+    output: Option<PathBuf>,
+
     /// KeePass database to check. Can either be a kdbx file or an exported CSV version of a
     /// KeePass database.
     #[structopt(name = "KEEPASS DATABASE FILE", parse(from_os_str))]
     keepass_db: PathBuf,
 }
+
+use std::fs::File;
+use std::io::{self, Write};
+
+#[derive(Debug)]
+pub enum Destination<'a> {
+    Terminal,
+    File(&'a std::fs::File),
+}
+
 fn main() {
     let opt = Opt::from_args();
     if opt.verbose {
@@ -48,6 +62,13 @@ fn main() {
     let hash_file: Option<PathBuf> = opt.hash_file;
     let keyfile: Option<PathBuf> = opt.keyfile;
     let check_online = opt.online;
+    if opt.output.is_some() {
+        let f = File::create(file).unwrap();
+    }
+    let dest: Destination = match opt.output {
+        Some(file) => Destination::File(&f),
+        None => Destination::Terminal,
+    };
 
     if hash_file == None && !check_online && !opt.check_duplicate && !opt.check_weak {
         println!("Whoops! I have nothing the check against");
