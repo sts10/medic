@@ -15,8 +15,12 @@ use std::io;
 use std::io::prelude::Read;
 use std::io::BufRead;
 use std::io::BufReader;
+use std::io::Write;
 use std::path::PathBuf;
 use zxcvbn::zxcvbn;
+
+use std::fs::OpenOptions;
+// use std::io::prelude::*;
 
 #[derive(Debug, Clone)]
 pub struct Entry {
@@ -27,6 +31,17 @@ pub struct Entry {
     digest: String,
 }
 
+// #[derive(Debug)]
+// pub enum Destination<'a> {
+//     Terminal,
+//     FilePath(&'a str),
+// }
+
+#[derive(Debug)]
+pub enum Destination {
+    Terminal,
+    FilePath(String),
+}
 #[derive(Debug, PartialEq)]
 pub enum VisibilityPreference {
     Show,
@@ -151,17 +166,25 @@ fn build_entries_from_csv(file_path: PathBuf) -> Vec<Entry> {
     }
     entries
 }
-pub fn present_breached_entries(breached_entries: &[Entry]) {
+pub fn present_breached_entries(
+    breached_entries: &[Entry],
+    output_dest: &Destination,
+) -> std::io::Result<()> {
     if !breached_entries.is_empty() {
-        println!(
-            "The following entries have passwords on contained in the list of breached passwords:"
-        );
+        write_to(
+            output_dest,
+            "The following entries have passwords on contained in the list of breached passwords:",
+        )?;
         for breached_entry in breached_entries {
-            println!("   - {}", breached_entry);
+            write_to(output_dest, format!("   - {}", breached_entry))?;
         }
     } else {
-        println!("I didn't find any of your passwords on the breached passwords list");
+        write_to(
+            output_dest,
+            "I didn't find any of your passwords on the breached passwords list",
+        )?;
     }
+    Ok(())
 }
 
 pub fn check_database_online(entries: &[Entry]) -> Vec<Entry> {
@@ -175,7 +198,7 @@ pub fn check_database_online(entries: &[Entry]) -> Vec<Entry> {
     breached_entries
 }
 
-pub fn confirm_online_check() -> bool {
+pub fn _confirm_online_check() -> bool {
     // Confirm that user for sure wants to check online
     println!("\n\nHeads up! I'll be sending the first 5 characters of the hashes of your passwords over the internet to HaveIBeenPwned. \nType allow to allow this");
     if gets().unwrap() == "allow" {
@@ -210,14 +233,14 @@ pub fn check_password_online(pass: &str) -> usize {
 }
 
 pub fn check_database_offline(
-    passwords_file_path: PathBuf,
+    hash_file: PathBuf,
     entries: &[Entry],
     progress_bar_visibility: VisibilityPreference,
 ) -> io::Result<Vec<Entry>> {
     let mut this_chunk = Vec::new();
     let mut breached_entries: Vec<Entry> = Vec::new();
 
-    let f = match File::open(passwords_file_path) {
+    let f = match File::open(hash_file) {
         Ok(res) => res,
         Err(e) => return Err(e),
     };
@@ -289,50 +312,65 @@ pub fn make_digest_map(entries: &[Entry]) -> io::Result<HashMap<String, Vec<Entr
 // Clippy told me "warning: parameter of type `HashMap` should be generalized over different hashers"
 pub fn present_duplicated_entries<S: ::std::hash::BuildHasher>(
     digest_map: HashMap<String, Vec<Entry>, S>,
-) {
+    output_dest: &Destination,
+) -> std::io::Result<()> {
     let mut has_duplicated_entries = false;
     for group in digest_map.values() {
         if group.len() > 1 {
-            println!("The following entries have the same password:\n");
+            write_to(
+                output_dest,
+                "The following entries have the same password:\n",
+            )?;
             for entry in group {
-                println!("   - {}", entry);
+                write_to(output_dest, format!("   - {}", entry))?;
             }
             has_duplicated_entries = true;
         }
     }
 
     if has_duplicated_entries {
-        println!("\nPassword re-use is bad. Change passwords until you have no duplicates.");
+        write_to(
+            output_dest,
+            "\nPassword re-use is bad. Change passwords until you have no duplicates.\n--------------------------------\n",
+        )
     } else {
-        println!("\nGood job -- no password reuse detected!");
+        write_to(output_dest, "\nGood job -- no password reuse detected!")
     }
 }
 
-pub fn check_for_and_display_weak_passwords(entries: &[Entry]) {
-    println!("\n--------------------------------");
+pub fn check_for_and_display_weak_passwords(
+    entries: &[Entry],
+    output_dest: &Destination,
+) -> std::io::Result<()> {
+    write_to(output_dest, "\n--------------------------------")?;
     for entry in entries {
         let estimate = zxcvbn(&entry.pass, &[&entry.title, &entry.username]).unwrap();
         if estimate.score < 4 {
-            println!("Your password for {} is weak.", entry);
-            give_feedback(estimate.feedback);
-            println!("\n--------------------------------");
+            write_to(output_dest, format!("Your password for {} is weak.", entry))?;
+            give_feedback(estimate.feedback, output_dest)?;
+            write_to(output_dest, "\n--------------------------------")?;
         }
     }
+    Ok(())
 }
 
-fn give_feedback(feedback: Option<zxcvbn::feedback::Feedback>) {
+fn give_feedback(
+    feedback: Option<zxcvbn::feedback::Feedback>,
+    output_dest: &Destination,
+) -> std::io::Result<()> {
     match feedback {
         Some(feedback) => {
             if let Some(warning) = feedback.warning {
-                println!("Warning: {}\n", warning);
+                write_to(output_dest, format!("Warning: {}\n", warning))?;
             }
-            println!("Suggestions:");
+            write_to(output_dest, "Suggestions:")?;
             for suggestion in feedback.suggestions {
-                println!("   - {}", suggestion)
+                write_to(output_dest, format!("   - {}", suggestion))?;
             }
         }
-        None => println!("No suggestions."),
+        None => write_to(output_dest, "No suggestions.")?,
     }
+    Ok(())
 }
 
 pub fn gets() -> io::Result<String> {
@@ -343,6 +381,46 @@ pub fn gets() -> io::Result<String> {
     }
 }
 
+pub fn create_file(dest: &Destination) -> std::io::Result<()> {
+    match dest {
+        Destination::FilePath(file_path) => {
+            // let _f = OpenOptions::new().create(true).open(file_path).unwrap();
+            match File::open(file_path) {
+                Ok(f) => {
+                    eprintln!("File where you want to write, {:?}, already exists. Would you like to overwrite? (y/N)", f);
+                    if gets().unwrap() == "y" {
+                        File::create(file_path)?;
+                    } else {
+                        panic!("OK, exiting");
+                    }
+                }
+                Err(_e) => {
+                    File::create(file_path)?;
+                }
+            }
+            Ok(())
+        }
+        Destination::Terminal => Ok(()),
+    }
+}
+pub fn write_to<StringLike: Into<String>>(
+    dest: &Destination,
+    output: StringLike,
+) -> std::io::Result<()> {
+    match dest {
+        Destination::FilePath(file_path) => {
+            let mut f = OpenOptions::new().append(true).open(file_path).unwrap();
+            writeln!(f, "{}", &output.into())
+            // Ok(())
+        }
+        Destination::Terminal => {
+            // println!("{}", &output);
+            let stdout = io::stdout(); // get the global stdout entity
+            let mut handle = stdout.lock(); // acquire a lock on it
+            writeln!(handle, "{}", output.into())
+        }
+    }
+}
 #[cfg(test)]
 mod integration_tests {
     use super::*;
@@ -366,12 +444,10 @@ mod integration_tests {
     #[test]
     fn can_check_keepass_db_against_offline_list_of_hashes() {
         let entries = make_test_entries_from_keepass_database_requiring_keyfile();
-        let passwords_file_path =
-            PathBuf::from("../hibp/pwned-passwords-sha1-ordered-by-count-v4.txt");
+        let hash_file = PathBuf::from("../hibp/pwned-passwords-sha1-ordered-by-count-v4.txt");
 
         let breached_entries =
-            check_database_offline(passwords_file_path, &entries, VisibilityPreference::Hide)
-                .unwrap();
+            check_database_offline(hash_file, &entries, VisibilityPreference::Hide).unwrap();
         assert_eq!(breached_entries.len(), 3);
     }
 

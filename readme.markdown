@@ -16,6 +16,7 @@ Medic can check the passwords of a given KeePass database in four ways:
 ## Usage
 
 ```text
+
 USAGE:
     medic [FLAGS] [OPTIONS] <KEEPASS DATABASE FILE>
 
@@ -34,6 +35,7 @@ OPTIONS:
                                   list of password hashes from HaveIBeenPwned, go to:
                                   https://haveibeenpwned.com/Passwords
     -k, --keyfile <keyfile>       Provide key file, if unlocking the KeePass databases requires one
+    -o, --output <output>         Print results of health check to a file
 
 ARGS:
     <KEEPASS DATABASE FILE>    KeePass database to check. Can either be a kdbx file or an exported CSV version of a

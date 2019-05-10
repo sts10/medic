@@ -34,11 +34,16 @@ struct Opt {
     #[structopt(short = "w", long = "weak")]
     check_weak: bool,
 
+    /// Print results of health check to a file
+    #[structopt(short = "o", long = "output")]
+    output: Option<String>,
+
     /// KeePass database to check. Can either be a kdbx file or an exported CSV version of a
     /// KeePass database.
     #[structopt(name = "KEEPASS DATABASE FILE", parse(from_os_str))]
     keepass_db: PathBuf,
 }
+
 fn main() {
     let opt = Opt::from_args();
     if opt.verbose {
@@ -48,6 +53,17 @@ fn main() {
     let hash_file: Option<PathBuf> = opt.hash_file;
     let keyfile: Option<PathBuf> = opt.keyfile;
     let check_online = opt.online;
+    let output_dest: Destination = match opt.output {
+        Some(file_path) => Destination::FilePath(file_path),
+        None => Destination::Terminal,
+    };
+    match &output_dest {
+        Destination::FilePath(file_path) => {
+            create_file(&Destination::FilePath(file_path.to_string()))
+                .expect("Couldn't write to file");
+        }
+        Destination::Terminal => (),
+    }
 
     if hash_file == None && !check_online && !opt.check_duplicate && !opt.check_weak {
         println!("Whoops! I have nothing the check against");
@@ -63,17 +79,20 @@ fn main() {
     };
 
     if opt.check_weak {
-        check_for_and_display_weak_passwords(&entries);
+        check_for_and_display_weak_passwords(&entries, &output_dest)
+            .expect("Error finding weak passwords");
     }
     if opt.check_duplicate {
         let digest_map = make_digest_map(&entries).unwrap();
-        present_duplicated_entries(digest_map);
+        present_duplicated_entries(digest_map, &output_dest)
+            .expect("Error presenting duplicate passwords");
     }
-    if let Some(file_path) = hash_file {
+    if let Some(hash_file) = hash_file {
         println!("Checking KeePass database against provided hash file");
         let breached_entries =
-            check_database_offline(file_path, &entries, VisibilityPreference::Show).unwrap();
-        present_breached_entries(&breached_entries);
+            check_database_offline(hash_file, &entries, VisibilityPreference::Show).unwrap();
+        present_breached_entries(&breached_entries, &output_dest)
+            .expect("Error presenting breached entries");
     }
     if check_online {
         println!(
@@ -83,7 +102,8 @@ fn main() {
             Ok(answer) => {
                 if answer == "y" {
                     let breached_entries = check_database_online(&entries);
-                    present_breached_entries(&breached_entries);
+                    present_breached_entries(&breached_entries, &output_dest)
+                        .expect("Error presenting breached errors");
                 }
             }
             Err(e) => eprintln!("Error reading your answer: {}", e),

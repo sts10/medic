@@ -1,0 +1,70 @@
+# Report
+
+
+--------------------------------
+Your password for hulu-username on Hulu is weak.
+Warning: Dates are often easy to guess.
+
+Suggestions:
+   - Add another word or two. Uncommon words are better.
+   - Avoid dates and years that are associated with you.
+
+--------------------------------
+Your password for twitter_handle on Twitter is weak.
+Warning: This is similar to a commonly used password.
+
+Suggestions:
+   - Add another word or two. Uncommon words are better.
+   - Reversed words aren't much harder to guess.
+
+--------------------------------
+Your password for testuser on GitHub is weak.
+Warning: This is similar to a commonly used password.
+
+Suggestions:
+   - Add another word or two. Uncommon words are better.
+   - Predictable substitutions like '@' instead of 'a' don't help very much.
+
+--------------------------------
+The following entries have the same password:
+
+   - TubeStreamer on YouTube
+   - streamer on twitch
+
+Password re-use is bad. Change passwords until you have no duplicates.
+Medic Health Report
+-------------------
+
+--------------------------------
+Your password for hulu-username on Hulu is weak.
+Warning: Dates are often easy to guess.
+
+Suggestions:
+   - Add another word or two. Uncommon words are better.
+   - Avoid dates and years that are associated with you.
+
+--------------------------------
+Your password for twitter_handle on Twitter is weak.
+Warning: This is similar to a commonly used password.
+
+Suggestions:
+   - Add another word or two. Uncommon words are better.
+   - Reversed words aren't much harder to guess.
+
+--------------------------------
+Your password for testuser on GitHub is weak.
+Warning: This is similar to a commonly used password.
+
+Suggestions:
+   - Add another word or two. Uncommon words are better.
+   - Predictable substitutions like '@' instead of 'a' don't help very much.
+
+--------------------------------
+The following entries have the same password:
+
+   - TubeStreamer on YouTube
+   - streamer on twitch
+
+Password re-use is bad. Change passwords until you have no duplicates.
+Medic Health Report
+-------------------
