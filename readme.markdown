@@ -44,15 +44,19 @@ ARGS:
 
 ### Examples
 
-- `medic --online test.kdbx` checks the passwords of `test.kdbx` using the HaveIBeenPwned API, as well as looks for weak and duplicate passwords.
+- `medic --online passwords.kdbx` checks the passwords of `passwords.kdbx` using the HaveIBeenPwned API, as well as looks for weak and duplicate passwords. Prints report to the terminal.
 
-- `medic --online -dw test.kdbx` checks the passwords of `test.kdbx` using the HaveIBeenPwned API, as well as looks for weak and duplicate passwords.
+- `medic --online -dw passwords.kdbx` checks the passwords of `passwords.kdbx` using the HaveIBeenPwned API, as well as looks for weak and duplicate passwords. Prints report to the terminal.
 
-- `medic --online -w -k=test-files/test_key_file test-files/test_db.kdbx` checks the passwords of `test_db.kdbx` -- which requires key file `test_key_file` -- using the HaveIBeenPwned API, as well as looks for weak passwords. 
+- `medic --online -dw --output=./report.txt passwords.kdbx` checks the passwords of `passwords.kdbx` using the HaveIBeenPwned API, as well as looks for weak and duplicate passwords. Prints report to the terminal. Prints result not to the terminal, but to a new text file `./report.txt`.
 
-- `medic -h=../pwned-passwords-sha1-ordered-by-count-v4.txt test_db.kdbx` checks the passwords of `test_db.kdbx` against the hashes `../pwned-passwords-sha1-ordered-by-count-v4.txt`, which is a large text file of password hashes. Medic will display any of the accounts in the `test_db.kdbx` with passwords that appear in the list.
+- `medic --online -w -k=test-files/test_key_file test-files/test_db.kdbx` checks the passwords of `test_db.kdbx` -- which requires key file `test_key_file` -- using the HaveIBeenPwned API, as well as looks for weak passwords. Prints results to terminal.
 
-- `medic -dw test.kdbx` checks the passwords of `test.kdbx` for weak and duplicate passwords.
+- `medic -h=../pwned-passwords-sha1-ordered-by-count-v4.txt my_db.kdbx` checks the passwords of `my_db.kdbx` against the hashes `../pwned-passwords-sha1-ordered-by-count-v4.txt`, which is a large text file of password hashes. Medic will display any of the accounts in the `my_db.kdbx` with passwords that appear in the list.
+
+- `medic -dw passwords.kdbx` checks the passwords of `passwords.kdbx` for weak and duplicate passwords.
+
+- `medic -dw passwords.kdbx --output=./password-report.txt` checks the passwords of `passwords.kdbx` for weak and duplicate passwords. Results are printed to a text file located at `./password-report.txt`.
 
 - `medic -d -h=pwnedpasswords.txt exported_csv_file.csv` checks an exported csv file against the hashes in `pwnedpasswords.txt`, as well as searches for duplicate passwords.
 
