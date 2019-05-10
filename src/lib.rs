@@ -233,14 +233,14 @@ pub fn check_password_online(pass: &str) -> usize {
 }
 
 pub fn check_database_offline(
-    passwords_file_path: PathBuf,
+    hash_file: PathBuf,
     entries: &[Entry],
     progress_bar_visibility: VisibilityPreference,
 ) -> io::Result<Vec<Entry>> {
     let mut this_chunk = Vec::new();
     let mut breached_entries: Vec<Entry> = Vec::new();
 
-    let f = match File::open(passwords_file_path) {
+    let f = match File::open(hash_file) {
         Ok(res) => res,
         Err(e) => return Err(e),
     };
@@ -444,12 +444,10 @@ mod integration_tests {
     #[test]
     fn can_check_keepass_db_against_offline_list_of_hashes() {
         let entries = make_test_entries_from_keepass_database_requiring_keyfile();
-        let passwords_file_path =
-            PathBuf::from("../hibp/pwned-passwords-sha1-ordered-by-count-v4.txt");
+        let hash_file = PathBuf::from("../hibp/pwned-passwords-sha1-ordered-by-count-v4.txt");
 
         let breached_entries =
-            check_database_offline(passwords_file_path, &entries, VisibilityPreference::Hide)
-                .unwrap();
+            check_database_offline(hash_file, &entries, VisibilityPreference::Hide).unwrap();
         assert_eq!(breached_entries.len(), 3);
     }
 

@@ -87,10 +87,10 @@ fn main() {
         present_duplicated_entries(digest_map, &output_dest)
             .expect("Error presenting duplicate passwords");
     }
-    if let Some(file_path) = hash_file {
+    if let Some(hash_file) = hash_file {
         println!("Checking KeePass database against provided hash file");
         let breached_entries =
-            check_database_offline(file_path, &entries, VisibilityPreference::Show).unwrap();
+            check_database_offline(hash_file, &entries, VisibilityPreference::Show).unwrap();
         present_breached_entries(&breached_entries, &output_dest)
             .expect("Error presenting breached entries");
     }
