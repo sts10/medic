@@ -7,9 +7,10 @@ extern crate sha1;
 extern crate zxcvbn;
 
 pub mod entries;
-use crate::entries::build_entries_from_csv;
-use crate::entries::build_entries_from_keepass_db;
-use crate::entries::*;
+// use crate::entries::build_entries_from_csv;
+use crate::entries::Entry;
+use entries::build_entries_from_csv;
+use entries::build_entries_from_keepass_db;
 use indicatif::{ProgressBar, ProgressStyle};
 use std::collections::HashMap;
 // use std::ffi::OsStr;
