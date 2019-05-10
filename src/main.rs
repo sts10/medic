@@ -1,4 +1,6 @@
 extern crate structopt;
+mod entries;
+use medic::entries::Entry;
 use medic::*;
 use std::path::PathBuf;
 use structopt::StructOpt;
