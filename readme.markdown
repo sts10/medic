@@ -13,6 +13,8 @@ Medic can check the passwords of a given KeePass database in four ways:
 3. Check for weak passwords, using [zxcvbn](https://github.com/dropbox/zxcvbn)
 4. Check for duplicate passwords
 
+If you're familiar with [1Password's Watchtower feature](https://support.1password.com/watchtower/), Medic aims to accomplish similar functionality for KeePass databases (with the additional benefit of optionally working offline).
+
 ## Usage
 
 ```text
