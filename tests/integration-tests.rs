@@ -82,4 +82,19 @@ mod integration_tests {
 
         assert_eq!(number_of_entries_with_duplicate_passwords, 2);
     }
+
+    // KeePass db version 4.0 test(s)
+
+    fn make_test_entries_from_keepass_4_database_not_requiring_keyfile() -> Vec<Entry> {
+        let keepass_db_file_path = PathBuf::from("tests/test-files/version_4_test_db.kdbx");
+        let test_db_pass = "password".to_string();
+        build_entries_from_keepass_db(keepass_db_file_path, test_db_pass, None)
+    }
+
+    #[test]
+    fn can_check_keepass_db_version_4_against_haveibeenpwned_api_online() {
+        let entries = make_test_entries_from_keepass_4_database_not_requiring_keyfile();
+        let breached_entries = check_database_online(&entries);
+        assert_eq!(breached_entries.len(), 2); // think this should be 2
+    }
 }
