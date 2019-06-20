@@ -70,10 +70,6 @@ ARGS:
 
 \* If you're new to torrents, [Transmission](https://transmissionbt.com) is a decent choice for an application to download torrents, which apparently works on Mac and Windows. (Personally, on Kubuntu, I used [KTorrent](https://www.kde.org/applications/internet/ktorrent/).) Once you have Transmission or another torrent-handling application installed, click the green "torrent" button on [the Pwned Passwords site](https://haveibeenpwned.com/Passwords). Save the (very small) `.torrent` file to your computer, then open that file with your torrent-downloading software. You may have to click "OK" or "Start", but once you do you'll be (probably slowly) downloading hundreds of millions of hashed passwords.
 
-## Known Issues/Limitations 
-
-I haven't tested Medic on KeePass databases that use an _XML_ keyfile (as opposed to a binary file). However I think this has been fixed in [keepass-rs version 0.4.1](https://github.com/sseemayer/keepass-rs/issues/12), which is what the current version of Medic uses. If you have problems, file an issue here. In the short term, you can try switching to a binary keyfile.
-
 ## How I choose to use this tool 
 
 1. [Download the PwnedPasswords list](https://haveibeenpwned.com/Passwords) (11 GB compressed, 22GB extracted). 
@@ -81,14 +77,13 @@ I haven't tested Medic on KeePass databases that use an _XML_ keyfile (as oppose
 3. Export your KeePass database to a CSV file (In KeePassXC: `Database` menu > "Export to CSV...") (Heads up, this file includes your passwords, so be careful). 
 4. Lock your KeePass database.
 5. Install Medic using instructions above.
-6. Run Medic by entering the following command: `medic -h=pwnedpasswords.txt -dw <my-exported-database>.csv`
+6. Run Medic by entering the following command: `medic -h=pwnedpasswords.txt -dw <my-exported-database>.csv`. Note any compromised passwords and change them ASAP.
 7. When finished, securely delete that exported CSV file. If on MacOS, run `srm <my-exported-database>.csv`. On Ubuntu-based Linux distributions, try `shred -ufv --iterations=60 <my-exported-database>.csv`. Your sensitive data should now be safely deleted, but feel free to securely delete Medic itself if so inclined.
 
 ## To do
 
 1. Better error handling (especially if user gets CLI arguments wrong or is using an incompatible KDF)
-2. Write more tests
-3. Optionally send output to a file
+2. Write more tests 
 4. Offer real packaging options?
 5. Offer an option to check for _similar_ passwords (maybe using [zxcvbn](https://github.com/shssoichiro/zxcvbn-rs)?)
 6. Design/commission a logo?!
@@ -102,9 +97,9 @@ I haven't tested Medic on KeePass databases that use an _XML_ keyfile (as oppose
 - [HIBPOfflineCheck](https://github.com/mihaifm/HIBPOfflineCheck) - A Keepass plugin that performs offline checks against the haveibeenpwned passwords file
 
 ### Useful projects in Rust 
+- [keepass-rs](https://github.com/sseemayer/keepass-rs)
 - [password-check](https://github.com/davidhewitt/password-check)
 - [rust-pwned-passwords](https://github.com/master-d/rust-pwned-passwords)
-- [keepass-rs](https://github.com/sseemayer/keepass-rs)
 - [keepass-diff](https://github.com/Narigo/keepass-diff)
 
 ### The CLI crate I used
