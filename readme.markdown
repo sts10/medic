@@ -72,9 +72,7 @@ ARGS:
 
 ## Known Issues/Limitations 
 
-Currently, this tool only works if your KeePass database uses the Key Derivation Function (KDF) called "AES-KDF (KDBX 3.1)". It cannot open KeePass databases that use either AES-KDF (KDBX 4) or Argon2. I believe this is a limitation of the otherwise amazing [keepass-rs crate](https://github.com/sseemayer/keepass-rs).
-
-If you use either of these incompatible KDFs, you can still use this tool by either (a) switching your db to "AES-KDF (KDBX 3.1)" or (b) exporting your database to a CSV file (see below).
+I haven't tested Medic on KeePass databases that use an _XML_ keyfile (as opposed to a binary file). However I think this has been fixed in [keepass-rs version 0.4.1](https://github.com/sseemayer/keepass-rs/issues/12), which is what the current version of Medic uses. If you have problems, file an issue here. In the short term, you can try switching to a binary keyfile.
 
 ## How I choose to use this tool 
 
