@@ -2,9 +2,11 @@
 
 A Rust CLI that provides a variety of ways to check the "health" of a given KeePass database, including checking passwords against the Have I Been Pwned password list. 
 
-**WARNING**: This software is a work in progress and still experimental. I would **NOT** use it with real KeePass databases or passwords just yet. I wrote [a blog post about this project](https://sts10.github.io/2019/02/01/medic.html).
+**WARNING**: This software is a work in progress and still experimental. I would **NOT** use it with real KeePass databases or passwords just yet. 
 
-## What this does
+[Read more about this project](https://sts10.github.io/2019/02/01/medic.html).
+
+## What this tool does
 
 Medic can check the passwords of a given KeePass database in four ways: 
 
@@ -13,12 +15,11 @@ Medic can check the passwords of a given KeePass database in four ways:
 3. Check for weak passwords, using [zxcvbn](https://github.com/dropbox/zxcvbn)
 4. Check for duplicate passwords
 
-If you're familiar with [1Password's Watchtower feature](https://support.1password.com/watchtower/), Medic aims to accomplish similar functionality for KeePass databases (with the additional benefit of optionally working offline).
+If you're familiar with [1Password's Watchtower feature](https://support.1password.com/watchtower/), Medic aims to accomplish similar functionality for KeePass databases (with the additional benefit of optionally working entirely offline).
 
 ## Usage
 
 ```text
-
 USAGE:
     medic [FLAGS] [OPTIONS] <KEEPASS DATABASE FILE>
 
@@ -60,7 +61,7 @@ ARGS:
 
 - `medic -dw passwords.kdbx --output=./password-report.txt` checks the passwords of `passwords.kdbx` for weak and duplicate passwords. Results are printed to a text file located at `./password-report.txt`.
 
-- `medic -d -h=pwnedpasswords.txt exported_csv_file.csv` checks an exported csv file against the hashes in `pwnedpasswords.txt`, as well as searches for duplicate passwords.
+- `medic -d -h=pwnedpasswords.txt kp_database_exported_csv_file.csv` checks an exported csv file against the hashes in `pwnedpasswords.txt`, as well as searches for duplicate passwords.
 
 ## Installation/Setup
 
@@ -72,7 +73,7 @@ ARGS:
 
 ## How I choose to use this tool 
 
-1. [Download the PwnedPasswords list](https://haveibeenpwned.com/Passwords) (11 GB compressed, 22GB extracted). 
+1. [Download the PwnedPasswords list](https://haveibeenpwned.com/Passwords) in the SHA-1 format, ordered by prevalence (this text file will be about 11 GB compressed, 22GB extracted). 
 2. Open your KeePass database in KeePassXC or whatever desktop app you use to open your database. 
 3. Export your KeePass database to a CSV file (In KeePassXC: `Database` menu > "Export to CSV...") (Heads up, this file includes your passwords, so be careful). 
 4. Lock your KeePass database.
@@ -84,20 +85,20 @@ ARGS:
 
 1. Better error handling (especially if user gets CLI arguments wrong or is using an incompatible KDF)
 2. Write more tests 
-4. Offer real packaging options?
+4. Offer real packaging / installation options?
 5. Offer an option to check for _similar_ passwords (maybe using [zxcvbn](https://github.com/shssoichiro/zxcvbn-rs)?)
 6. Design/commission a logo?!
 
 ## Reference
 
 - [Troy Hunt blog post about the password database](https://www.troyhunt.com/introducing-306-million-freely-downloadable-pwned-passwords/)
+- The Rust crate Medic uses to open and read KeePass databases: [keepass-rs](https://github.com/sseemayer/keepass-rs)
 
 ### Similar projects
 - [A KeePass extension for checking against HaveIBeenPwned](https://github.com/andrew-schofield/keepass2-haveibeenpwned)
 - [HIBPOfflineCheck](https://github.com/mihaifm/HIBPOfflineCheck) - A Keepass plugin that performs offline checks against the haveibeenpwned passwords file
 
 ### Useful projects in Rust 
-- [keepass-rs](https://github.com/sseemayer/keepass-rs)
 - [password-check](https://github.com/davidhewitt/password-check)
 - [rust-pwned-passwords](https://github.com/master-d/rust-pwned-passwords)
 - [keepass-diff](https://github.com/Narigo/keepass-diff)
