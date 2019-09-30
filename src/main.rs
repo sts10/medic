@@ -72,7 +72,7 @@ fn main() {
         println!("Run --help for more information");
         return;
     }
-    let entries: Option<Vec<Entry>> = Some(get_entries(keepass_db_file_path, keyfile));
+    let entries: Option<Vec<Entry>> = get_entries(keepass_db_file_path, keyfile);
     // Make sure we have Some Entries!
     let entries: Vec<Entry> = match entries {
         Some(entries) => entries,

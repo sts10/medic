@@ -36,26 +36,31 @@ pub enum VisibilityPreference {
     Hide,
 }
 
-pub fn get_entries(file_path: PathBuf, keyfile_path: Option<PathBuf>) -> Vec<Entry> {
-    let file_extension = file_path.extension().unwrap().to_str().unwrap();
+pub fn get_entries(file_path: PathBuf, keyfile_path: Option<PathBuf>) -> Option<Vec<Entry>> {
+    let file_extension = file_path
+        .extension()
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_lowercase();
 
-    let db_pass: Option<String> = if file_extension != "csv" {
-        Some(
-            rpassword::read_password_from_tty(Some(
-                "Enter the password to your KeePass database: ",
-            ))
-            .unwrap(),
-        )
+    if file_extension != "csv" {
+        let db_pass: String = rpassword::read_password_from_tty(Some(
+            "Enter the password to your KeePass database: ",
+        ))
+        .unwrap();
+        Some(build_entries_from_keepass_db(
+            file_path,
+            db_pass,
+            keyfile_path,
+        ))
+    } else if file_extension == "csv" {
+        Some(build_entries_from_csv(file_path))
     } else {
         None
-    };
-
-    if file_extension != "csv" && db_pass.is_some() {
-        build_entries_from_keepass_db(file_path, db_pass.unwrap(), keyfile_path)
-    } else {
-        build_entries_from_csv(file_path)
     }
 }
+
 pub fn present_breached_entries(
     breached_entries: &[Entry],
     output_dest: &Destination,
