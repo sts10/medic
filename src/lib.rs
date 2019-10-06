@@ -7,13 +7,11 @@ extern crate sha1;
 extern crate zxcvbn;
 
 pub mod entries;
-// use crate::entries::build_entries_from_csv;
 use crate::entries::Entry;
 use entries::build_entries_from_csv;
 use entries::build_entries_from_keepass_db;
 use indicatif::{ProgressBar, ProgressStyle};
 use std::collections::HashMap;
-// use std::ffi::OsStr;
 use std::ffi::OsStr;
 use std::fs::File;
 use std::fs::OpenOptions;
@@ -23,6 +21,8 @@ use std::io::BufReader;
 use std::io::Write;
 use std::path::PathBuf;
 use zxcvbn::zxcvbn;
+// use zxcvbn::Entropy;
+// use zxcvbn::ZxcvbnError;
 // use std::io::prelude::*;
 
 #[derive(Debug)]
@@ -245,7 +245,11 @@ pub fn check_for_and_display_weak_passwords(
 ) -> std::io::Result<()> {
     write_to(output_dest, "\n--------------------------------")?;
     for entry in entries {
-        let estimate = zxcvbn(&entry.pass, &[&entry.title, &entry.username]).unwrap();
+        let estimate = match zxcvbn(&entry.pass, &[&entry.title, &entry.username]) {
+            Ok(estimate) => estimate,
+            Err(e) => panic!("Error getting password strength estimate: {}", e),
+        };
+        entry.pass.len();
         if estimate.score < 4 {
             write_to(output_dest, format!("Your password for {} is weak.", entry))?;
             give_feedback(estimate.feedback, output_dest)?;
@@ -310,7 +314,7 @@ pub fn write_to<StringLike: Into<String>>(
 ) -> std::io::Result<()> {
     match dest {
         Destination::FilePath(file_path) => {
-            let mut f = OpenOptions::new().append(true).open(file_path).unwrap();
+            let mut f = OpenOptions::new().append(true).open(file_path)?;
             writeln!(f, "{}", &output.into())
             // Ok(())
         }
