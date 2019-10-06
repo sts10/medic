@@ -45,26 +45,26 @@ pub fn get_entries(file_path: PathBuf, keyfile_path: Option<PathBuf>) -> Option<
         }
     };
 
-    if file_extension == "kdbx" || file_extension == "kdb" {
-        let db_pass: String = match rpassword::read_password_from_tty(Some(
-            "Enter the password to your KeePass database: ",
-        )) {
-            Ok(password) => password,
-            Err(e) => {
-                eprintln!("Error: {:?}", e);
-                return None;
-            }
-        };
+    match file_extension.as_str() {
+        "kdbx" | "kdb" => {
+            let db_pass: String = match rpassword::read_password_from_tty(Some(
+                "Enter the password to your KeePass database: ",
+            )) {
+                Ok(password) => password,
+                Err(e) => {
+                    eprintln!("Error: {:?}", e);
+                    return None;
+                }
+            };
 
-        Some(build_entries_from_keepass_db(
-            file_path,
-            db_pass,
-            keyfile_path,
-        ))
-    } else if file_extension == "csv" {
-        Some(build_entries_from_csv(file_path))
-    } else {
-        None
+            Some(build_entries_from_keepass_db(
+                file_path,
+                db_pass,
+                keyfile_path,
+            ))
+        }
+        "csv" => Some(build_entries_from_csv(file_path)),
+        _ => None,
     }
 }
 
@@ -98,10 +98,11 @@ pub fn present_breached_entries(
 pub fn check_database_online(entries: &[Entry]) -> reqwest::Result<Vec<Entry>> {
     let mut breached_entries: Vec<Entry> = Vec::new();
     for entry in entries {
-        let appearances = match check_password_online(&entry.pass) {
-            Ok(appearances) => appearances,
-            Err(e) => return Err(e),
-        };
+        let appearances = check_password_online(&entry.pass)?;
+        // let appearances = match check_password_online(&entry.pass) {
+        //     Ok(appearances) => appearances,
+        //     Err(e) => return Err(e),
+        // };
         if appearances > 0 {
             breached_entries.push(entry.clone());
         }
