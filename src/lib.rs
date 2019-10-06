@@ -125,7 +125,7 @@ fn check_password_online(pass: &str) -> reqwest::Result<usize> {
 
     for line in body.lines() {
         let this_suffix = &line[..35];
-        let this_number_of_matches = line[36..].parse::<usize>().unwrap();
+        let this_number_of_matches = line[36..].parse::<usize>().unwrap_or(1); // if error parsing the number of matches, at least record one match
         if this_suffix == suffix {
             return Ok(this_number_of_matches);
         }
@@ -145,7 +145,7 @@ pub fn check_database_offline(
         Ok(res) => res,
         Err(e) => return Err(e),
     };
-    let passwords_file_size = f.metadata().unwrap().len() as usize;
+    let passwords_file_size = f.metadata()?.len() as usize;
 
     // times via `cargo test --release can_check_offline --no-run && time cargo test --release can_check_offline -- --nocapture`
     // let chunk_size = 1_000_000_000; // real 1m6.354s
@@ -162,7 +162,7 @@ pub fn check_database_offline(
 
     let file = BufReader::new(&f);
     for line in file.lines() {
-        let this_line = line.unwrap()[..40].to_string();
+        let this_line = line?[..40].to_string();
         this_chunk.push(this_line);
         if this_chunk.len() * 48 > chunk_size {
             match check_this_chunk(&entries, &this_chunk) {
@@ -289,11 +289,10 @@ pub fn gets() -> io::Result<String> {
 pub fn create_file(dest: &Destination) -> std::io::Result<()> {
     match dest {
         Destination::FilePath(file_path) => {
-            // let _f = OpenOptions::new().create(true).open(file_path).unwrap();
             match File::open(file_path) {
                 Ok(f) => {
                     eprintln!("File where you want to write, {:?}, already exists. Would you like to overwrite? (y/N)", f);
-                    if gets().unwrap() == "y" {
+                    if gets()? == "y" {
                         File::create(file_path)?;
                     } else {
                         panic!("OK, exiting");
