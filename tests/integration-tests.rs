@@ -95,6 +95,19 @@ mod integration_tests {
     fn can_check_keepass_db_version_4_against_haveibeenpwned_api_online() {
         let entries = make_test_entries_from_keepass_4_database_not_requiring_keyfile();
         let breached_entries = check_database_online(&entries);
-        assert_eq!(breached_entries.len(), 2); // think this should be 2
+        assert_eq!(breached_entries.len(), 2); // there are 3 breached passwords in this test file
+    }
+
+    // test reading a CSV file (exported KeePass database)
+    fn make_test_entries_from_csv_export() -> Option<Vec<Entry>> {
+        let keepass_db_file_path = PathBuf::from("tests/test-files/csv_export.csv");
+        get_entries(keepass_db_file_path, None)
+    }
+
+    #[test]
+    fn can_check_csv_export() {
+        let entries = make_test_entries_from_csv_export().unwrap();
+        let breached_entries = check_database_online(&entries);
+        assert_eq!(breached_entries.len(), 3); // there are 3 breached passwords in this test file
     }
 }
