@@ -81,7 +81,7 @@ pub fn present_breached_entries(
     if !breached_entries.is_empty() {
         write_to(
             output_dest,
-            "The following entries have passwords on contained in the list of breached passwords:",
+            "The following entries have passwords contained in the list of breached passwords:",
         )?;
         for breached_entry in breached_entries {
             write_to(output_dest, format!("   - {}", breached_entry))?;
