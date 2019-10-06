@@ -46,7 +46,7 @@ pub fn get_entries(file_path: PathBuf, keyfile_path: Option<PathBuf>) -> Option<
     };
 
     match file_extension.as_str() {
-        "kdbx" | "kdb" => {
+        "kdbx" => {
             let db_pass: String = match rpassword::read_password_from_tty(Some(
                 "Enter the password to your KeePass database: ",
             )) {
@@ -70,7 +70,7 @@ pub fn get_entries(file_path: PathBuf, keyfile_path: Option<PathBuf>) -> Option<
 
 fn get_file_extension(file_path: &PathBuf) -> Option<String> {
     match file_path.extension().and_then(OsStr::to_str) {
-        Some(extension) => Some(extension.to_string().to_lowercase()),
+        Some(extension) => Some(extension.to_lowercase()),
         None => None,
     }
 }

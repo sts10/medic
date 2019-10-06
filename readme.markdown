@@ -83,6 +83,8 @@ ARGS:
 
 ## To do
 
+See Issues on GitHub for more, but here are some broad ideas:
+
 1. Better error handling (especially if user gets CLI arguments wrong or is using an incompatible KDF)
 2. Write more tests 
 4. Offer real packaging / installation options?
