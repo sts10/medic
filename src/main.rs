@@ -80,18 +80,27 @@ fn main() {
     };
 
     if opt.check_weak {
-        check_for_and_display_weak_passwords(&entries, &output_dest)
-            .expect("Error finding weak passwords");
+        match check_for_and_display_weak_passwords(&entries, &output_dest) {
+            Ok(()) => (),
+            Err(e) => panic!("Error checking for weak passwords!: {}", e),
+        }
     }
     if opt.check_duplicate {
-        let digest_map = make_digest_map(&entries).unwrap();
+        let digest_map = match make_digest_map(&entries) {
+            Ok(map) => map,
+            Err(e) => panic!("Failed to check for duplicate passwords: {}", e),
+        };
         present_duplicated_entries(digest_map, &output_dest)
             .expect("Error presenting duplicate passwords");
     }
     if let Some(hash_file) = hash_file {
         println!("Checking KeePass database against provided hash file");
         let breached_entries =
-            check_database_offline(hash_file, &entries, VisibilityPreference::Show).unwrap();
+            match check_database_offline(hash_file, &entries, VisibilityPreference::Show) {
+                Ok(breached_entries) => breached_entries,
+                Err(e) => panic!("Error checking database offline: {}", e),
+            };
+
         present_breached_entries(&breached_entries, &output_dest)
             .expect("Error presenting breached entries");
     }
