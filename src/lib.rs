@@ -95,25 +95,29 @@ pub fn present_breached_entries(
     Ok(())
 }
 
-pub fn check_database_online(entries: &[Entry]) -> Vec<Entry> {
+pub fn check_database_online(entries: &[Entry]) -> reqwest::Result<Vec<Entry>> {
     let mut breached_entries: Vec<Entry> = Vec::new();
     for entry in entries {
-        let appearances = check_password_online(&entry.pass);
+        let appearances = match check_password_online(&entry.pass) {
+            Ok(appearances) => appearances,
+            Err(e) => return Err(e),
+        };
         if appearances > 0 {
             breached_entries.push(entry.clone());
         }
     }
-    breached_entries
+    Ok(breached_entries)
 }
 
-fn check_password_online(pass: &str) -> usize {
+fn check_password_online(pass: &str) -> reqwest::Result<usize> {
     let digest = sha1::Sha1::from(pass).digest().to_string().to_uppercase();
     let (prefix, suffix) = (&digest[..5], &digest[5..]);
 
     // API requires us to submit just the first 5 characters of the hash
     let url = format!("https://api.pwnedpasswords.com/range/{}", prefix);
-    let mut response = reqwest::get(&url).unwrap();
-    let body = response.text().unwrap();
+
+    let mut response = reqwest::get(&url)?;
+    let body = response.text()?;
 
     // Reponse is a series of lines like
     //  suffix:N
@@ -123,10 +127,10 @@ fn check_password_online(pass: &str) -> usize {
         let this_suffix = &line[..35];
         let this_number_of_matches = line[36..].parse::<usize>().unwrap();
         if this_suffix == suffix {
-            return this_number_of_matches;
+            return Ok(this_number_of_matches);
         }
     }
-    0
+    Ok(0)
 }
 
 pub fn check_database_offline(

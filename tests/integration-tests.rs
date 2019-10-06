@@ -15,7 +15,7 @@ mod integration_tests {
     fn can_check_keepass_db_against_haveibeenpwned_api_online() {
         let entries = make_test_entries_from_keepass_database_requiring_keyfile();
         let breached_entries = check_database_online(&entries);
-        assert_eq!(breached_entries.len(), 3);
+        assert_eq!(breached_entries.unwrap().len(), 3);
     }
 
     // you're going to want to run this test by running `cargo test --release`, else it's going to take
@@ -62,7 +62,7 @@ mod integration_tests {
     fn can_check_keepass_db_that_does_not_require_a_keyfile_against_haveibeenpwned_api_online() {
         let entries = make_test_entries_from_keepass_database_not_requiring_keyfile();
         let breached_entries = check_database_online(&entries);
-        assert_eq!(breached_entries.len(), 3);
+        assert_eq!(breached_entries.unwrap().len(), 3);
     }
 
     #[test]
@@ -95,7 +95,7 @@ mod integration_tests {
     fn can_check_keepass_db_version_4_against_haveibeenpwned_api_online() {
         let entries = make_test_entries_from_keepass_4_database_not_requiring_keyfile();
         let breached_entries = check_database_online(&entries);
-        assert_eq!(breached_entries.len(), 2); // there are 3 breached passwords in this test file
+        assert_eq!(breached_entries.unwrap().len(), 2); // there are 3 breached passwords in this test file
     }
 
     // test reading a CSV file (exported KeePass database)
@@ -108,6 +108,6 @@ mod integration_tests {
     fn can_check_csv_export() {
         let entries = make_test_entries_from_csv_export().unwrap();
         let breached_entries = check_database_online(&entries);
-        assert_eq!(breached_entries.len(), 3); // there are 3 breached passwords in this test file
+        assert_eq!(breached_entries.unwrap().len(), 3); // there are 3 breached passwords in this test file
     }
 }

@@ -102,7 +102,10 @@ fn main() {
         match gets() {
             Ok(answer) => {
                 if answer == "y" {
-                    let breached_entries = check_database_online(&entries);
+                    let breached_entries = match check_database_online(&entries) {
+                        Ok(breached_entries) => breached_entries,
+                        Err(e) => panic!("Error: {}", e),
+                    };
                     present_breached_entries(&breached_entries, &output_dest)
                         .expect("Error presenting breached errors");
                 }
