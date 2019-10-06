@@ -14,15 +14,15 @@ use entries::build_entries_from_keepass_db;
 use indicatif::{ProgressBar, ProgressStyle};
 use std::collections::HashMap;
 // use std::ffi::OsStr;
+use std::ffi::OsStr;
 use std::fs::File;
+use std::fs::OpenOptions;
 use std::io;
 use std::io::BufRead;
 use std::io::BufReader;
 use std::io::Write;
 use std::path::PathBuf;
 use zxcvbn::zxcvbn;
-
-use std::fs::OpenOptions;
 // use std::io::prelude::*;
 
 #[derive(Debug)]
@@ -37,18 +37,25 @@ pub enum VisibilityPreference {
 }
 
 pub fn get_entries(file_path: PathBuf, keyfile_path: Option<PathBuf>) -> Option<Vec<Entry>> {
-    let file_extension = file_path
-        .extension()
-        .unwrap()
-        .to_str()
-        .unwrap()
-        .to_lowercase();
+    let file_extension = match get_file_extension(&file_path) {
+        Some(extension) => extension,
+        None => {
+            eprintln!("No file extension found");
+            return None;
+        }
+    };
 
-    if file_extension != "csv" {
-        let db_pass: String = rpassword::read_password_from_tty(Some(
+    if file_extension == "kdbx" || file_extension == "kdb" {
+        let db_pass: String = match rpassword::read_password_from_tty(Some(
             "Enter the password to your KeePass database: ",
-        ))
-        .unwrap();
+        )) {
+            Ok(password) => password,
+            Err(e) => {
+                eprintln!("Error: {:?}", e);
+                return None;
+            }
+        };
+
         Some(build_entries_from_keepass_db(
             file_path,
             db_pass,
@@ -61,6 +68,12 @@ pub fn get_entries(file_path: PathBuf, keyfile_path: Option<PathBuf>) -> Option<
     }
 }
 
+fn get_file_extension(file_path: &PathBuf) -> Option<String> {
+    match file_path.extension().and_then(OsStr::to_str) {
+        Some(extension) => Some(extension.to_string().to_lowercase()),
+        None => None,
+    }
+}
 pub fn present_breached_entries(
     breached_entries: &[Entry],
     output_dest: &Destination,
