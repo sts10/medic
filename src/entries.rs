@@ -61,7 +61,10 @@ pub fn build_entries_from_keepass_db(
     let db = match unlock_keepass_database(file_path, db_pass, keyfile_path) {
         Ok(db) => db,
         Err(e) => {
-            eprintln!("Error unlocking KeePass database: {}. No entries found.", e);
+            eprintln!(
+                "Error unlocking KeePass database: {}. No entries found. Aborting.",
+                e
+            );
             return None;
         }
     };
@@ -72,12 +75,26 @@ pub fn build_entries_from_keepass_db(
                 // println!("Saw group '{}'", g.name);
             }
             Node::EntryNode(e) => {
+                let entry_password: &str = match e.get_password() {
+                    Some(p) => p,
+                    None => {
+                        println!(
+                            "Error reading a password for entry:\n{}, username {}, on site {}.\nAborting without finding any entries.",
+                            e.get_title().unwrap_or("Unknown Title"),
+                            e.get_username().unwrap_or("Unknown"),
+                            e.get("URL").unwrap_or("Unknown URL"),
+                        );
+                        return None;
+                    }
+                };
+
                 let this_entry = Entry {
                     title: e.get_title().unwrap().to_string(),
                     username: e.get_username().unwrap().to_string(),
                     url: e.get("URL").unwrap().to_string(),
-                    pass: e.get_password().unwrap().to_string(),
-                    digest: sha1::Sha1::from(e.get_password().unwrap().to_string())
+                    // pass: e.get_password().unwrap().to_string(),
+                    pass: entry_password.to_string(),
+                    digest: sha1::Sha1::from(entry_password)
                         .digest()
                         .to_string()
                         .to_uppercase(),
@@ -120,12 +137,24 @@ pub fn build_entries_from_csv(file_path: PathBuf) -> Option<Vec<Entry>> {
             continue;
         }
 
+        let entry_password: &str = match record.get(3) {
+            Some(p) => p,
+            None => {
+                println!(
+                    "Error reading a password for entry:\n{}, username {}, on site {}.\nAborting without finding any entries.",
+                    record.get(1).unwrap_or("Unknown Title"),
+                    record.get(2).unwrap_or("Unknown"),
+                    record.get(4).unwrap_or("Unknown URL"),
+                );
+                return None;
+            }
+        };
         let this_entry = Entry {
             title: record.get(1).unwrap().to_string(),
             username: record.get(2).unwrap().to_string(),
             url: record.get(4).unwrap().to_string(),
-            pass: record.get(3).unwrap().to_string(),
-            digest: sha1::Sha1::from(record.get(3).unwrap())
+            pass: entry_password.to_string(),
+            digest: sha1::Sha1::from(entry_password)
                 .digest()
                 .to_string()
                 .to_uppercase(),
