@@ -95,10 +95,6 @@ pub fn check_database_online(entries: &[Entry]) -> reqwest::Result<Vec<Entry>> {
     let mut breached_entries: Vec<Entry> = Vec::new();
     for entry in entries {
         let appearances = check_password_online(&entry.pass)?;
-        // let appearances = match check_password_online(&entry.pass) {
-        //     Ok(appearances) => appearances,
-        //     Err(e) => return Err(e),
-        // };
         if appearances > 0 {
             breached_entries.push(entry.clone());
         }
@@ -138,10 +134,7 @@ pub fn check_database_offline(
     let mut this_chunk = Vec::new();
     let mut breached_entries: Vec<Entry> = Vec::new();
 
-    let f = match File::open(hash_file) {
-        Ok(res) => res,
-        Err(e) => return Err(e),
-    };
+    let f = File::open(hash_file)?;
     let passwords_file_size = f.metadata()?.len() as usize;
 
     // times via `cargo test --release can_check_offline --no-run && time cargo test --release can_check_offline -- --nocapture`
@@ -312,7 +305,6 @@ pub fn write_to<StringLike: Into<String>>(
         Destination::FilePath(file_path) => {
             let mut f = OpenOptions::new().append(true).open(file_path)?;
             writeln!(f, "{}", &output.into())
-            // Ok(())
         }
         Destination::Terminal => {
             // println!("{}", &output);
