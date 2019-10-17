@@ -72,13 +72,11 @@ fn main() {
         println!("Run --help for more information");
         return;
     }
-    let entries: Option<Vec<Entry>> = get_entries(keepass_db_file_path, keyfile);
-    // Make sure we have Some Entries!
-    let entries: Vec<Entry> = match entries {
+
+    let entries: Vec<Entry> = match get_entries(keepass_db_file_path, keyfile) {
         Some(entries) => entries,
         None => panic!("Didn't find any entries in provided KeePass database"),
     };
-
     if opt.check_weak {
         match check_for_and_display_weak_passwords(&entries, &output_dest) {
             Ok(()) => (),
