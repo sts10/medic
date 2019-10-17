@@ -68,7 +68,7 @@ fn main() {
 
     if hash_file == None && !check_online && !opt.check_duplicate && !opt.check_weak {
         println!("Whoops! I have nothing the check against");
-        println!("You must either:\n1. Provide a hash file to check against \nOR\n2. Use the --online flag to check your passwords online via HaveIBeenPwned API");
+        println!("You must either:\n1. Provide a hash file to check against \nOR\n2. Use the --online flag to check your passwords online via HaveIBeenPwned API\nOR\n3. Use one or both of -d or -w flags to check for duplicate and/or weak passwords");
         println!("Run --help for more information");
         return;
     }

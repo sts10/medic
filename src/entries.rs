@@ -43,7 +43,6 @@ fn unlock_keepass_database(
         None => None,
     };
 
-    println!("Attempting to open database");
     Database::open(
         &mut db_file,                                 // the database
         Some(&db_pass),                               // password
@@ -70,7 +69,6 @@ pub fn build_entries_from_keepass_db(
         }
     };
 
-    println!("Made it here, with db");
     // Iterate over all Groups and Nodes
     for node in &db.root {
         match node {
@@ -78,7 +76,6 @@ pub fn build_entries_from_keepass_db(
                 // println!("Saw group '{}'", g.name);
             }
             Node::Entry(e) => {
-                println!("Found an Entry");
                 let entry_password: &str = match e.get_password() {
                     Some(p) => p,
                     None => {
