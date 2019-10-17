@@ -57,13 +57,9 @@ pub fn get_entries(file_path: PathBuf, keyfile_path: Option<PathBuf>) -> Option<
                 }
             };
 
-            Some(build_entries_from_keepass_db(
-                file_path,
-                db_pass,
-                keyfile_path,
-            ))
+            build_entries_from_keepass_db(file_path, db_pass, keyfile_path)
         }
-        "csv" => Some(build_entries_from_csv(file_path)),
+        "csv" => build_entries_from_csv(file_path),
         _ => None,
     }
 }

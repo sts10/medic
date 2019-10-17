@@ -8,7 +8,7 @@ mod integration_tests {
         let keepass_db_file_path = PathBuf::from("tests/test-files/test_db.kdbx");
         let test_db_pass = "password".to_string();
         let test_keyfile = Some(PathBuf::from("tests/test-files/test_key_file"));
-        build_entries_from_keepass_db(keepass_db_file_path, test_db_pass, test_keyfile)
+        build_entries_from_keepass_db(keepass_db_file_path, test_db_pass, test_keyfile).unwrap()
     }
 
     #[test]
@@ -55,7 +55,7 @@ mod integration_tests {
     fn make_test_entries_from_keepass_database_not_requiring_keyfile() -> Vec<Entry> {
         let keepass_db_file_path = PathBuf::from("tests/test-files/test_db_no_keyfile.kdbx");
         let test_db_pass = "password".to_string();
-        build_entries_from_keepass_db(keepass_db_file_path, test_db_pass, None)
+        build_entries_from_keepass_db(keepass_db_file_path, test_db_pass, None).unwrap()
     }
 
     #[test]
@@ -88,7 +88,7 @@ mod integration_tests {
     fn make_test_entries_from_keepass_4_database_not_requiring_keyfile() -> Vec<Entry> {
         let keepass_db_file_path = PathBuf::from("tests/test-files/version_4_test_db.kdbx");
         let test_db_pass = "password".to_string();
-        build_entries_from_keepass_db(keepass_db_file_path, test_db_pass, None)
+        build_entries_from_keepass_db(keepass_db_file_path, test_db_pass, None).unwrap()
     }
 
     #[test]

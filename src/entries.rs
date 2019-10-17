@@ -29,30 +29,42 @@ fn unlock_keepass_database(
     path: PathBuf,
     db_pass: String,
     keyfile_path: Option<PathBuf>,
-) -> keepass::Database {
-    let mut keyfile = keyfile_path.map(|kfp| File::open(kfp).unwrap());
+) -> Result<keepass::Database, keepass::result::Error> {
+    let mut db_file = match File::open(path) {
+        Ok(db) => db,
+        Err(e) => panic!("Error opening KeePass database file: {}", e),
+    };
 
-    match Database::open(
-        &mut File::open(path).unwrap(),               // the database
+    let mut keyfile: Option<File> = match keyfile_path {
+        Some(keyfile_path) => match File::open(keyfile_path) {
+            Ok(keyfile) => Some(keyfile),
+            Err(e) => panic!("Error opening specified keyfile: {}", e),
+        },
+        None => None,
+    };
+
+    Database::open(
+        &mut db_file,                                 // the database
         Some(&db_pass),                               // password
         keyfile.as_mut().map(|f| f as &mut dyn Read), // keyfile
-    ) {
-        Ok(db) => db,
-        Err(e) => {
-            panic!("\nError opening database: {}", e);
-        }
-    }
+    )
 }
 
 pub fn build_entries_from_keepass_db(
     file_path: PathBuf,
     db_pass: String,
     keyfile_path: Option<PathBuf>,
-) -> Vec<Entry> {
+) -> Option<Vec<Entry>> {
     let mut entries: Vec<Entry> = vec![];
 
     println!("Attempting to unlock your KeePass database...");
-    let db = unlock_keepass_database(file_path, db_pass, keyfile_path);
+    let db = match unlock_keepass_database(file_path, db_pass, keyfile_path) {
+        Ok(db) => db,
+        Err(e) => {
+            eprintln!("Error unlocking KeePass database: {}. No entries found.", e);
+            return None;
+        }
+    };
     // Iterate over all Groups and Nodes
     for node in &db.root {
         match node {
@@ -77,18 +89,32 @@ pub fn build_entries_from_keepass_db(
         }
     }
     println!("Successfully read KeePass database!");
-    entries
+    Some(entries)
 }
 
-pub fn build_entries_from_csv(file_path: PathBuf) -> Vec<Entry> {
+pub fn build_entries_from_csv(file_path: PathBuf) -> Option<Vec<Entry>> {
     let mut entries: Vec<Entry> = vec![];
 
-    let file = File::open(file_path).unwrap();
+    let file = match File::open(file_path) {
+        Ok(f) => f,
+        Err(e) => {
+            eprintln!("Error reading CSV file: {}. Aborting.", e);
+            return None;
+        }
+    };
     let mut rdr = csv::Reader::from_reader(file);
     // Loop over each record.
     for result in rdr.records() {
-        // An error may occur, so abort the program in an unfriendly way.
-        let record = result.expect("a CSV record");
+        let record = match result {
+            Ok(rec) => rec,
+            Err(e) => {
+                eprintln!(
+                    "Error reading a line of the specified CSV file: {}. Aborting.",
+                    e
+                );
+                return None;
+            }
+        };
 
         if record.get(0) == Some("Group") && record.get(1) == Some("Title") {
             continue;
@@ -108,5 +134,5 @@ pub fn build_entries_from_csv(file_path: PathBuf) -> Vec<Entry> {
             entries.push(this_entry);
         }
     }
-    entries
+    Some(entries)
 }
