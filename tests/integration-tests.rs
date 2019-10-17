@@ -109,7 +109,8 @@ mod integration_tests {
     // keepass-rs crate dependency
     #[test]
     #[ignore]
-    fn can_check_keepass3_1_db_that_does_not_require_a_keyfile_against_haveibeenpwned_api_online() {
+    fn can_check_keepass_v3_1_db_that_does_not_require_a_keyfile_against_haveibeenpwned_api_online()
+    {
         let entries = make_test_entries_from_keepass_database_3_1_not_requiring_keyfile();
         let breached_entries = check_database_online(&entries);
         assert_eq!(breached_entries.unwrap().len(), 3);
