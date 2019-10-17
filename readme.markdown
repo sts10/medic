@@ -71,6 +71,10 @@ ARGS:
 
 \* If you're new to torrents, [Transmission](https://transmissionbt.com) is a decent choice for an application to download torrents, which apparently works on Mac and Windows. (Personally, on Kubuntu, I used [KTorrent](https://www.kde.org/applications/internet/ktorrent/).) Once you have Transmission or another torrent-handling application installed, click the green "torrent" button on [the Pwned Passwords site](https://haveibeenpwned.com/Passwords). Save the (very small) `.torrent` file to your computer, then open that file with your torrent-downloading software. You may have to click "OK" or "Start", but once you do you'll be (probably slowly) downloading hundreds of millions of hashed passwords.
 
+## A note on KeePass v3.1 databases
+
+Due to a bug I haven't quite tracked down yet, Medic is unable to open and/or read KeePass databases that are version 3.1 and do NOT require a keyfile to decrypt. If you have a database that is version 3.1 (rather than the newer 4.0), I'd suggest upgrading to 4.0. I _think_ the best way to do this is to use KeePassXC to export your 3.1 database to a CSV file, then import it into a new 4.0 database. Feel free to open an issue if you have questions. I have [opened an issue with keepass-rs](https://github.com/sseemayer/keepass-rs/issues/15) asking for help.
+
 ## How I choose to use this tool 
 
 1. [Download the PwnedPasswords list](https://haveibeenpwned.com/Passwords) in the SHA-1 format, ordered by prevalence (this text file will be about 11 GB compressed, 22GB extracted). 
