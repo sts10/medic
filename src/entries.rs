@@ -71,10 +71,10 @@ pub fn build_entries_from_keepass_db(
     // Iterate over all Groups and Nodes
     for node in &db.root {
         match node {
-            Node::GroupNode(_g) => {
+            Node::Group(_g) => {
                 // println!("Saw group '{}'", g.name);
             }
-            Node::EntryNode(e) => {
+            Node::Entry(e) => {
                 let entry_password: &str = match e.get_password() {
                     Some(p) => p,
                     None => {
