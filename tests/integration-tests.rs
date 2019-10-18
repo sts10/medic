@@ -108,7 +108,6 @@ mod integration_tests {
     // I believe this test results in an infinite loop due to an issue in version 0.4.4 of the
     // keepass-rs crate dependency
     #[test]
-    #[ignore]
     fn can_check_keepass_v3_1_db_that_does_not_require_a_keyfile_against_haveibeenpwned_api_online()
     {
         let entries = make_test_entries_from_keepass_database_3_1_not_requiring_keyfile();
