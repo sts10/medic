@@ -66,14 +66,18 @@ ARGS:
 ## Installation/Setup
 
 1. [Install Rust](https://www.rust-lang.org/tools/install) if you haven't already
-2. `cargo install --git https://github.com/sts10/medic`
+2. Run: `cargo install --git https://github.com/sts10/medic` or for better performance decrypting AES KeePass databases (see below), run: `RUSTFLAGS='-C target-cpu=native' cargo install --git https://github.com/sts10/medic`
 3. Optional: If you'd like to check if any of your passwords have been breached _without_ sending any information about them over the internet, you'll need to [download the Pwned Passwords list](https://haveibeenpwned.com/Passwords), ideally via torrent\*. Choose the SHA-1 version, the one ordered by prevalence. You'll need about 35 GB of space free to do this. The torrent downloads a `.7z` compressed file. Double click it to extract it to a ~22 GB text file. That's what this program will need to work with.
 
 \* If you're new to torrents, [Transmission](https://transmissionbt.com) is a decent choice for an application to download torrents, which apparently works on Mac and Windows. (Personally, on Kubuntu, I used [KTorrent](https://www.kde.org/applications/internet/ktorrent/).) Once you have Transmission or another torrent-handling application installed, click the green "torrent" button on [the Pwned Passwords site](https://haveibeenpwned.com/Passwords). Save the (very small) `.torrent` file to your computer, then open that file with your torrent-downloading software. You may have to click "OK" or "Start", but once you do you'll be (probably slowly) downloading hundreds of millions of hashed passwords.
 
-## A note on KeePass v3.1 databases
+## A note on KeePass databases that use an AES KDF (key derivation function)
 
-Due to a bug I haven't quite tracked down yet, Medic is unable to open and/or read KeePass databases that are version 3.1 and do NOT require a keyfile to decrypt. If you have a database that is version 3.1 (rather than the newer 4.0), I'd suggest upgrading to 4.0. I _think_ the best way to do this is to use KeePassXC to export your 3.1 database to a CSV file, then import it into a new 4.0 database. Feel free to open an issue if you have questions. I have [opened an issue with keepass-rs](https://github.com/sseemayer/keepass-rs/issues/15) asking for help.
+By default, if your KeePass database uses an _AES_ KDF (key derivation function) Medic will not use your CPU to decrypt your KeePass database. That means that if your databases is locked with a high number of AES key transformation rounds, it will take a while for Medic to open your database. 
+
+To solve this, either switch your database's KDF from "AES-KDF" to "Argon2", or install Medic by running this command: `RUSTFLAGS='-C target-cpu=native' cargo install --git https://github.com/sts10/medic`. If you've already installed Medic without the RUSTFLAG, try running `RUSTFLAGS='-C target-cpu=native' cargo install --force --git https://github.com/sts10/medic`
+
+More info [here](https://github.com/sseemayer/keepass-rs/issues/15#issuecomment-543615390) and [here](https://docs.rs/aes/0.3.2/aes/).
 
 ## How I choose to use this tool 
 
