@@ -95,11 +95,11 @@ More info [here](https://github.com/sseemayer/keepass-rs/issues/15#issuecomment-
 
 See Issues on GitHub for more, but here are some broad ideas:
 
-[ ] Better error handling (especially if user gets CLI arguments wrong or is using an incompatible KDF)
-[ ] Write more tests 
-[ ] Offer real packaging / installation options?
-[ ] Offer an option to check for _similar_ passwords (maybe using [zxcvbn](https://github.com/shssoichiro/zxcvbn-rs)?)
-[ ] Design/commission a logo?!
+- [ ] Better error handling (especially if user gets CLI arguments wrong or is using an incompatible KDF)
+- [ ] Write more tests 
+- [ ] Offer real packaging / installation options?
+- [ ] Offer an option to check for _similar_ passwords (maybe using [zxcvbn](https://github.com/shssoichiro/zxcvbn-rs)?)
+- [ ] Design/commission a logo?!
 
 ## Reference
 
