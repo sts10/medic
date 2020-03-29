@@ -49,15 +49,15 @@ ARGS:
 
 ### Examples
 
-- `medic --online passwords.kdbx` checks the passwords of `passwords.kdbx` using the HaveIBeenPwned API, as well as looks for weak and duplicate passwords. Prints report to the terminal.
+- `medic --online passwords.kdbx` checks the passwords of `passwords.kdbx` using the HaveIBeenPwned API. Prints report to the terminal.
 
 - `medic --online -dw passwords.kdbx` checks the passwords of `passwords.kdbx` using the HaveIBeenPwned API, as well as looks for weak and duplicate passwords. Prints report to the terminal.
 
-- `medic --online -dw --output=./report.txt passwords.kdbx` checks the passwords of `passwords.kdbx` using the HaveIBeenPwned API, as well as looks for weak and duplicate passwords. Prints report to the terminal. Prints result not to the terminal, but to a new text file `./report.txt`.
+- `medic --online -dw --output=./report.txt passwords.kdbx` checks the passwords of `passwords.kdbx` using the HaveIBeenPwned API, as well as looks for weak and duplicate passwords. Prints result not to the terminal, but to a new text file `./report.txt`.
 
 - `medic --online -w -k=test-files/test_key_file test-files/test_db.kdbx` checks the passwords of `test_db.kdbx` -- which requires key file `test_key_file` -- using the HaveIBeenPwned API, as well as looks for weak passwords. Prints results to terminal.
 
-- `medic -h=../pwned-passwords-sha1-ordered-by-count-v4.txt my_db.kdbx` checks the passwords of `my_db.kdbx` against the hashes `../pwned-passwords-sha1-ordered-by-count-v4.txt`, which is a large text file of password hashes. Medic will display any of the accounts in the `my_db.kdbx` with passwords that appear in the list.
+- `medic -h=../pwned-passwords-sha1-ordered-by-count-v4.txt my_db.kdbx` checks the passwords of `my_db.kdbx` against the password hashes found in `../pwned-passwords-sha1-ordered-by-count-v4.txt`, which is a large text file of password hashes. Medic will display any of the accounts in the `my_db.kdbx` with passwords that appear in the list to the terminal.
 
 - `medic -dw passwords.kdbx` checks the passwords of `passwords.kdbx` for weak and duplicate passwords.
 
