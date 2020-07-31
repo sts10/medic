@@ -91,6 +91,16 @@ More info [here](https://github.com/sseemayer/keepass-rs/issues/15#issuecomment-
 6. Run Medic by entering the following command: `medic -h=pwnedpasswords.txt -dw <my-exported-database>.csv`. Note any compromised passwords and change them ASAP.
 7. When finished, securely delete that exported CSV file. If on MacOS, run `srm <my-exported-database>.csv`. On Ubuntu-based Linux distributions, try `shred -ufv --iterations=60 <my-exported-database>.csv`. Your sensitive data should now be safely deleted, but feel free to securely delete Medic itself if so inclined.
 
+## Running tests
+
+`cargo test --release`, though you'll need a file with a list of hashed passwords to pass one of the tests. 
+
+## Checking for security vulnerabilities in Medic's dependencies
+
+You can programmatically check Medic's dependencies for security vulnerabilities with [cargo audit](https://github.com/RustSec/cargo-audit). 
+
+If you find vulnerabilities that concerns you, you can attempt to update the offending dependent crate yourself in the `Cargo.toml` file. Also, please open an issue on this repo.
+
 ## To do
 
 See Issues on GitHub for more, but here are some broad ideas:
