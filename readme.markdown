@@ -6,7 +6,7 @@ A Rust CLI that provides a variety of ways to check the "health" of a given KeeP
 
 [Read more about this project](https://sts10.github.io/2019/02/01/medic.html).
 
-I'll note here that [KeePassXC](https://keepassxc.org/), [as of version 2.5.0](https://keepassxc.org/blog/2019-10-26-2.5.0-released/), has a feature similar to Medic: With the KeePassXC CLI, you can now check your passwords against a downloaded list of compromised passwords from HaveIBeenPwned. 
+I'll note here that [KeePassXC](https://keepassxc.org/), [as of version 2.6.0](https://keepassxc.org/blog/2020-07-07-2.6.0-released/), has a lot of the same features as Medic, some of which are accessible through its easy-to-use graphical interface. I understand that you can also use the KeePassXC CLI tool to check your database against an offline list of password hashed.
 
 ## What this tool does
 
