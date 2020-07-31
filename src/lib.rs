@@ -222,7 +222,7 @@ pub fn present_duplicated_entries<S: ::std::hash::BuildHasher>(
     if has_duplicated_entries {
         write_to(
             output_dest,
-            "\nPassword re-use is bad. Change passwords until you have no duplicates.\n--------------------------------\n",
+            "\nRe-using passwords for multiple accounts is potentially dangerous. Recommend you change passwords until you have no duplicates.\n--------------------------------\n",
         )
     } else {
         write_to(output_dest, "\nGood job -- no password reuse detected!")

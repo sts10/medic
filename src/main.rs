@@ -22,7 +22,7 @@ struct Opt {
     #[structopt(long = "online")]
     online: bool,
 
-    /// Provide password hash file to check database against. To download a copy of very large list of
+    /// Provide file containing SHA-1 hashes of passwords to check database against. To download a copy of very large list of
     /// password hashes from HaveIBeenPwned, go to: https://haveibeenpwned.com/Passwords
     #[structopt(short = "h", long = "hashfile", parse(from_os_str))]
     hash_file: Option<PathBuf>,
@@ -68,7 +68,7 @@ fn main() {
 
     if hash_file == None && !check_online && !opt.check_duplicate && !opt.check_weak {
         println!("Whoops! I have nothing the check against");
-        println!("You must either:\n1. Provide a hash file to check against \nOR\n2. Use the --online flag to check your passwords online via HaveIBeenPwned API\nOR\n3. Use one or both of -d or -w flags to check for duplicate and/or weak passwords");
+        println!("You must either:\n1. Provide a file with hashes of passwords to check against \nOR\n2. Use the --online flag to check your passwords online via HaveIBeenPwned API\nOR\n3. Use one or both of -d or -w flags to check for duplicate and/or weak passwords");
         println!("Run --help for more information");
         return;
     }
@@ -92,7 +92,7 @@ fn main() {
             .expect("Error presenting duplicate passwords");
     }
     if let Some(hash_file) = hash_file {
-        println!("Checking KeePass database against provided hash file");
+        println!("Checking KeePass database against provided file of hashed passwords");
         let breached_entries =
             match check_database_offline(hash_file, &entries, VisibilityPreference::Show) {
                 Ok(breached_entries) => breached_entries,
