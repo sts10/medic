@@ -109,7 +109,7 @@ fn check_password_online(pass: &str) -> reqwest::Result<usize> {
     // API requires us to submit just the first 5 characters of the hash
     let url = format!("https://api.pwnedpasswords.com/range/{}", prefix);
 
-    let mut response = reqwest::get(&url)?;
+    let response = reqwest::blocking::get(&url)?;
     let body = response.text()?;
 
     // Reponse is a series of lines like
@@ -240,9 +240,9 @@ pub fn check_for_and_display_weak_passwords(
             Err(e) => panic!("Error getting password strength estimate: {}", e),
         };
         entry.pass.len();
-        if estimate.score < 4 {
+        if estimate.score() < 4 {
             write_to(output_dest, format!("Your password for {} is weak.", entry))?;
-            give_feedback(estimate.feedback, output_dest)?;
+            give_feedback(estimate.feedback(), output_dest)?;
             write_to(output_dest, "\n--------------------------------")?;
         }
     }
@@ -250,16 +250,16 @@ pub fn check_for_and_display_weak_passwords(
 }
 
 fn give_feedback(
-    feedback: Option<zxcvbn::feedback::Feedback>,
+    feedback: &Option<zxcvbn::feedback::Feedback>,
     output_dest: &Destination,
 ) -> std::io::Result<()> {
     match feedback {
         Some(feedback) => {
-            if let Some(warning) = feedback.warning {
+            if let Some(warning) = feedback.warning() {
                 write_to(output_dest, format!("Warning: {}\n", warning))?;
             }
             write_to(output_dest, "Suggestions:")?;
-            for suggestion in feedback.suggestions {
+            for suggestion in feedback.suggestions() {
                 write_to(output_dest, format!("   - {}", suggestion))?;
             }
         }
