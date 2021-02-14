@@ -71,6 +71,8 @@ ARGS:
 2. Run: `cargo install --git https://github.com/sts10/medic` or for better performance decrypting AES KeePass databases (see below), run: `RUSTFLAGS='-C target-cpu=native' cargo install --git https://github.com/sts10/medic`
 3. Optional: If you'd like to check if any of your passwords have been breached _without_ sending any information about them over the internet, you'll need to [download the Pwned Passwords list](https://haveibeenpwned.com/Passwords), ideally via torrent\*. Choose the SHA-1 version, the one ordered by prevalence. You'll need about 35 GB of space free to do this. The torrent downloads a `.7z` compressed file. Double click it to extract it to a ~22 GB text file. That's what this program will need to work with.
 
+On Ubuntu, Medic may require libssl-dev to install successfully. Install with: `sudo apt-get install -y libssl-dev`.
+
 \* If you're new to torrents, [Transmission](https://transmissionbt.com) is a decent choice for an application to download torrents, which apparently works on Mac and Windows. (Personally, on Kubuntu, I used [KTorrent](https://www.kde.org/applications/internet/ktorrent/).) Once you have Transmission or another torrent-handling application installed, click the green "torrent" button on [the Pwned Passwords site](https://haveibeenpwned.com/Passwords). Save the (very small) `.torrent` file to your computer, then open that file with your torrent-downloading software. You may have to click "OK" or "Start", but once you do you'll be (probably slowly) downloading hundreds of millions of hashed passwords.
 
 ## A note on KeePass databases that use an AES KDF (key derivation function)
