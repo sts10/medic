@@ -68,7 +68,7 @@ ARGS:
 ## Installation/Setup
 
 1. [Install Rust](https://www.rust-lang.org/tools/install) if you haven't already
-2. Run: `cargo install --git https://github.com/sts10/medic` or for better performance decrypting AES KeePass databases (see below), run: `RUSTFLAGS='-C target-cpu=native' cargo install --git https://github.com/sts10/medic`
+2. Run: `cargo install --git https://github.com/sts10/medic --branch main` or for better performance decrypting AES KeePass databases (see below), run: `RUSTFLAGS='-C target-cpu=native' cargo install --git https://github.com/sts10/medic --branch main`
 3. Optional: If you'd like to check if any of your passwords have been breached _without_ sending any information about them over the internet, you'll need to [download the Pwned Passwords list](https://haveibeenpwned.com/Passwords), ideally via torrent (see below). Choose the SHA-1 version, the one ordered by prevalence. You'll need about 35 GB of space free to do this. The torrent downloads a `.7z` compressed file. Double click it to extract it to a ~22 GB text file. That's what this program will need to work with.
 
 ### Dependencies
@@ -83,7 +83,7 @@ If you're new to torrents, [Transmission](https://transmissionbt.com) is a decen
 
 By default, if your KeePass database uses an _AES_ KDF (key derivation function) Medic will not use your CPU to decrypt your KeePass database. That means that if your databases is locked with a high number of AES key transformation rounds, it will take a while for Medic to open your database. 
 
-To solve this, either switch your database's KDF from "AES-KDF" to "Argon2", or install Medic by running this command: `RUSTFLAGS='-C target-cpu=native' cargo install --git https://github.com/sts10/medic`. If you've already installed Medic without the RUSTFLAG, try running `RUSTFLAGS='-C target-cpu=native' cargo install --force --git https://github.com/sts10/medic`
+To solve this, either switch your database's KDF from "AES-KDF" to "Argon2", or install Medic by running this command: `RUSTFLAGS='-C target-cpu=native' cargo install --git https://github.com/sts10/medic --branch main`. If you've already installed Medic without the RUSTFLAG, try running `RUSTFLAGS='-C target-cpu=native' cargo install --force --git https://github.com/sts10/medic --branch main`
 
 More info [here](https://github.com/sseemayer/keepass-rs/issues/15#issuecomment-543615390) and [here](https://docs.rs/aes/0.3.2/aes/).
 
