@@ -19,11 +19,9 @@ use std::io;
 use std::io::BufRead;
 use std::io::BufReader;
 use std::io::Write;
+use std::path::Path;
 use std::path::PathBuf;
 use zxcvbn::zxcvbn;
-// use zxcvbn::Entropy;
-// use zxcvbn::ZxcvbnError;
-// use std::io::prelude::*;
 
 #[derive(Debug)]
 pub enum Destination {
@@ -64,11 +62,15 @@ pub fn get_entries(file_path: PathBuf, keyfile_path: Option<PathBuf>) -> Option<
     }
 }
 
-fn get_file_extension(file_path: &PathBuf) -> Option<String> {
-    match file_path.extension().and_then(OsStr::to_str) {
-        Some(extension) => Some(extension.to_lowercase()),
-        None => None,
-    }
+fn get_file_extension(file_path: &Path) -> Option<String> {
+    file_path
+        .extension()
+        .and_then(OsStr::to_str)
+        .map(|extension| extension.to_lowercase())
+    // match file_path.extension().and_then(OsStr::to_str) {
+    //     Some(extension) => Some(extension.to_lowercase()),
+    //     None => None,
+    // }
 }
 pub fn present_breached_entries(
     breached_entries: &[Entry],

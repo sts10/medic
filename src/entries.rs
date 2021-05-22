@@ -15,9 +15,9 @@ pub struct Entry {
 
 impl std::fmt::Display for Entry {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        if self.title != "" {
+        if !self.title.is_empty() {
             write!(f, "{} on {}", self.username, self.title)
-        } else if self.title == "" && self.url != "" {
+        } else if self.title.is_empty() && !self.url.is_empty() {
             write!(f, "{} for {}", self.username, self.url)
         } else {
             write!(f, "{}", self.username)
@@ -100,7 +100,7 @@ pub fn build_entries_from_keepass_db(
                         .to_string()
                         .to_uppercase(),
                 };
-                if this_entry.pass != "" {
+                if !this_entry.pass.is_empty() {
                     entries.push(this_entry);
                 }
             }
@@ -160,7 +160,7 @@ pub fn build_entries_from_csv(file_path: PathBuf) -> Option<Vec<Entry>> {
                 .to_string()
                 .to_uppercase(),
         };
-        if this_entry.pass != "" {
+        if !this_entry.pass.is_empty() {
             entries.push(this_entry);
         }
     }
