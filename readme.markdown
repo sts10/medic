@@ -2,7 +2,7 @@
 
 A Rust CLI that provides a variety of ways to check the "health" of a given KeePass database, including checking passwords against the Have I Been Pwned password list. 
 
-**WARNING**: This software is a work in progress and still experimental. I would **NOT** use it with real KeePass databases or passwords just yet. 
+**WARNING**: I wrote this program mostly for personal use and to learn Rust. Use on real passwords at your own risk!
 
 [Read more about this project](https://sts10.github.io/2019/02/01/medic.html).
 
