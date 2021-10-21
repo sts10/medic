@@ -1,6 +1,6 @@
 [package]
 name = "medic"
-version = "0.3.14"
+version = "0.3.20"
 authors = ["sts10 <sschlinkert@gmail.com>"]
 edition = "2021"
 
@@ -8,7 +8,7 @@ edition = "2021"
 # reqwest = "0.9.18"
 reqwest = { version = "0.11", features = ["blocking", "json"] } 
 rpassword = "4"
-keepass = "0.4.7"
+keepass = "0.4.9"
 sha1 = "0.6"
 indicatif = "0"
 zxcvbn = "2"

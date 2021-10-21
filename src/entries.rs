@@ -1,5 +1,6 @@
 extern crate keepass;
-use keepass::{Database, Node};
+// use keepass::{Database, Node, NodeRef};
+use keepass::{Database, NodeRef};
 use std::fs::File;
 use std::io::prelude::Read;
 use std::path::PathBuf;
@@ -72,10 +73,10 @@ pub fn build_entries_from_keepass_db(
     // Iterate over all Groups and Nodes
     for node in &db.root {
         match node {
-            Node::Group(_g) => {
+            NodeRef::Group(_g) => {
                 // println!("Saw group '{}'", g.name);
             }
-            Node::Entry(e) => {
+            NodeRef::Entry(e) => {
                 let entry_password: &str = match e.get_password() {
                     Some(p) => p,
                     None => {
