@@ -1,16 +1,16 @@
 [package]
 name = "medic"
-version = "0.3.20"
+version = "0.3.3"
 authors = ["sts10 <sschlinkert@gmail.com>"]
 edition = "2021"
 
 [dependencies]
-# reqwest = "0.9.18"
 reqwest = { version = "0.11", features = ["blocking", "json"] } 
-rpassword = "4"
+rpassword = "5.0.1"
 keepass = "0.4.9"
 sha1 = "0.6"
-indicatif = "0"
-zxcvbn = "2"
-csv = "1"
-structopt = "0.3"
+# sha1 = "0.10.0"
+indicatif = "0.16.2"
+zxcvbn = "2.1.2"
+csv = "1.1"
+clap = { version = "3.0.14", features = ["derive"] }

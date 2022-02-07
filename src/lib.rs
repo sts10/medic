@@ -241,7 +241,7 @@ pub fn check_for_and_display_weak_passwords(
             Ok(estimate) => estimate,
             Err(e) => panic!("Error getting password strength estimate: {}", e),
         };
-        entry.pass.len();
+        // entry.pass.len();
         if estimate.score() < 4 {
             write_to(output_dest, format!("Your password for {} is weak.", entry))?;
             give_feedback(estimate.feedback(), output_dest)?;

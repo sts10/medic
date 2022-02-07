@@ -1,52 +1,51 @@
-extern crate structopt;
+use clap::Parser;
 use medic::entries::Entry;
 use medic::*;
 use std::path::PathBuf;
-use structopt::StructOpt;
 
-/// Medic
-#[derive(StructOpt, Debug)]
-#[structopt(name = "medic")]
-struct Opt {
+/// Check the "health" of passwords in a KeePass database
+#[derive(Parser, Debug)]
+#[clap(name = "medic", version)]
+struct Args {
     /// Give verbose output
-    #[structopt(short = "v", long = "verbose")]
+    #[clap(short = 'v', long = "verbose")]
     verbose: bool,
 
     /// Provide key file, if unlocking the KeePass databases requires one
-    #[structopt(short = "k", long = "keyfile", parse(from_os_str))]
+    #[clap(short = 'k', long = "keyfile", parse(from_os_str))]
     keyfile: Option<PathBuf>,
 
     /// Check passwords against breached passwords online via the HaveIBeenPwned API. More info
     /// here:
     /// https://www.troyhunt.com/ive-just-launched-pwned-passwords-version-2/#cloudflareprivacyandkanonymity
-    #[structopt(long = "online")]
+    #[clap(long = "online")]
     online: bool,
 
     /// Provide file containing SHA-1 hashes of passwords to check database against. To download a copy of very large list of
     /// password hashes from HaveIBeenPwned, go to: https://haveibeenpwned.com/Passwords
-    #[structopt(short = "h", long = "hashfile", parse(from_os_str))]
+    #[clap(short = 'h', long = "hashfile", parse(from_os_str))]
     hash_file: Option<PathBuf>,
 
     /// Check database for duplicate passwords
-    #[structopt(short = "d", long = "duplicate")]
+    #[clap(short = 'd', long = "duplicate")]
     check_duplicate: bool,
 
     /// Check database for weak passwords
-    #[structopt(short = "w", long = "weak")]
+    #[clap(short = 'w', long = "weak")]
     check_weak: bool,
 
     /// Print results of health check to a file
-    #[structopt(short = "o", long = "output")]
+    #[clap(short = 'o', long = "output")]
     output: Option<String>,
 
     /// KeePass database to check. Can either be a kdbx file or an exported CSV version of a
     /// KeePass database.
-    #[structopt(name = "KEEPASS DATABASE FILE", parse(from_os_str))]
+    #[clap(name = "KEEPASS DATABASE FILE", parse(from_os_str))]
     keepass_db: PathBuf,
 }
 
 fn main() {
-    let opt = Opt::from_args();
+    let opt = Args::parse();
     if opt.verbose {
         println!("{:?}", opt);
     }
