@@ -777,9 +777,9 @@ dependencies = [
 
 [[package]]
 name = "keepass"
-version = "0.4.9"
+version = "0.4.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "19c6459a13f7b07b59a30e7568c35604846d3f9729a56b66f48c5a0c7944abb7"
+checksum = "c1984730d99fc734e857f66493d87b3b018bdc050117d7d6f6e9f481be0f2818"
 dependencies = [
  "aes",
  "base64 0.13.0",
@@ -828,7 +828,7 @@ checksum = "a3e378b66a060d48947b590737b30a1be76706c8dd7b8ba0f2fe3989c68a853f"
 
 [[package]]
 name = "medic"
-version = "0.3.3"
+version = "0.3.32"
 dependencies = [
  "clap",
  "csv",
@@ -1190,9 +1190,9 @@ dependencies = [
 
 [[package]]
 name = "rpassword"
-version = "5.0.1"
+version = "7.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ffc936cf8a7ea60c58f030fd36a612a48f440610214dc54bc36431f9ea0c3efb"
+checksum = "26b763cb66df1c928432cc35053f8bd4cec3335d8559fc16010017d16b3c1680"
 dependencies = [
  "libc",
  "winapi",

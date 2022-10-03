@@ -45,15 +45,14 @@ pub fn get_entries(file_path: PathBuf, keyfile_path: Option<PathBuf>) -> Option<
 
     match file_extension.as_str() {
         "kdbx" => {
-            let db_pass: String = match rpassword::read_password_from_tty(Some(
-                "Enter the password to your KeePass database: ",
-            )) {
-                Ok(password) => password,
-                Err(e) => {
-                    eprintln!("Error: {:?}", e);
-                    return None;
-                }
-            };
+            let db_pass: String =
+                match rpassword::prompt_password("Enter the password to your KeePass database: ") {
+                    Ok(password) => password,
+                    Err(e) => {
+                        eprintln!("Error: {:?}", e);
+                        return None;
+                    }
+                };
 
             build_entries_from_keepass_db(file_path, db_pass, keyfile_path)
         }
