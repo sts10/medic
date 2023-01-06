@@ -80,20 +80,22 @@ pub fn build_entries_from_keepass_db(
                 let entry_password: &str = match e.get_password() {
                     Some(p) => p,
                     None => {
-                        println!(
-                            "Error reading a password for entry:\n{}, username {}, on site {}.\nAborting without finding any entries.",
+                        eprintln!(
+                            "Error reading a password for entry:\n{}, username {}, on site {}.",
                             e.get_title().unwrap_or("Unknown Title"),
                             e.get_username().unwrap_or("Unknown"),
                             e.get("URL").unwrap_or("Unknown URL"),
                         );
-                        return None;
+                        // return None;
+                        continue;
                     }
                 };
 
                 let this_entry = Entry {
-                    title: e.get_title().unwrap().to_string(),
-                    username: e.get_username().unwrap().to_string(),
-                    url: e.get("URL").unwrap().to_string(),
+                    title: e.get_title().unwrap_or("").to_string(),
+                    username: e.get_username().unwrap_or("").to_string(),
+                    // url: e.get("URL").unwrap().to_string(),
+                    url: e.get_url().unwrap_or("").to_string(),
                     // pass: e.get_password().unwrap().to_string(),
                     pass: entry_password.to_string(),
                     digest: sha1::Sha1::from(entry_password)
@@ -102,6 +104,7 @@ pub fn build_entries_from_keepass_db(
                         .to_uppercase(),
                 };
                 if !this_entry.pass.is_empty() {
+                    eprintln!("pushing entry {:?}", this_entry);
                     entries.push(this_entry);
                 }
             }
