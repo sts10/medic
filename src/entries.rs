@@ -1,6 +1,6 @@
 extern crate keepass;
 // use keepass::{Database, Node, NodeRef};
-use keepass::{Database, NodeRef};
+use keepass::{Database, DatabaseOpenError, NodeRef};
 use std::fs::File;
 use std::io::prelude::Read;
 use std::path::PathBuf;
@@ -30,7 +30,7 @@ fn unlock_keepass_database(
     path: PathBuf,
     db_pass: String,
     keyfile_path: Option<PathBuf>,
-) -> Result<keepass::Database, keepass::result::Error> {
+) -> Result<keepass::Database, DatabaseOpenError> {
     let mut db_file = match File::open(path) {
         Ok(db) => db,
         Err(e) => panic!("Error opening KeePass database file: {}", e),
