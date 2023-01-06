@@ -3,7 +3,7 @@ extern crate indicatif;
 extern crate keepass;
 extern crate reqwest;
 extern crate rpassword;
-extern crate sha1;
+extern crate sha1_smol;
 extern crate zxcvbn;
 
 pub mod entries;
@@ -104,7 +104,10 @@ pub fn check_database_online(entries: &[Entry]) -> reqwest::Result<Vec<Entry>> {
 }
 
 fn check_password_online(pass: &str) -> reqwest::Result<usize> {
-    let digest = sha1::Sha1::from(pass).digest().to_string().to_uppercase();
+    let digest = sha1_smol::Sha1::from(pass)
+        .digest()
+        .to_string()
+        .to_uppercase();
     let (prefix, suffix) = (&digest[..5], &digest[5..]);
 
     // API requires us to submit just the first 5 characters of the hash

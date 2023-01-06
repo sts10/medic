@@ -1,5 +1,4 @@
 extern crate keepass;
-// use keepass::{Database, Node, NodeRef};
 use keepass::{Database, DatabaseOpenError, NodeRef};
 use std::fs::File;
 use std::io::prelude::Read;
@@ -98,7 +97,7 @@ pub fn build_entries_from_keepass_db(
                     url: e.get_url().unwrap_or("").to_string(),
                     // pass: e.get_password().unwrap().to_string(),
                     pass: entry_password.to_string(),
-                    digest: sha1::Sha1::from(entry_password)
+                    digest: sha1_smol::Sha1::from(entry_password)
                         .digest()
                         .to_string()
                         .to_uppercase(),
@@ -159,7 +158,7 @@ pub fn build_entries_from_csv(file_path: PathBuf) -> Option<Vec<Entry>> {
             username: record.get(2).unwrap().to_string(),
             url: record.get(4).unwrap().to_string(),
             pass: entry_password.to_string(),
-            digest: sha1::Sha1::from(entry_password)
+            digest: sha1_smol::Sha1::from(entry_password)
                 .digest()
                 .to_string()
                 .to_uppercase(),

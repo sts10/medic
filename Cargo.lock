@@ -847,7 +847,7 @@ checksum = "a3e378b66a060d48947b590737b30a1be76706c8dd7b8ba0f2fe3989c68a853f"
 
 [[package]]
 name = "medic"
-version = "0.3.33"
+version = "0.3.34"
 dependencies = [
  "clap",
  "csv",
@@ -855,7 +855,7 @@ dependencies = [
  "keepass",
  "reqwest",
  "rpassword",
- "sha1",
+ "sha1_smol",
  "zxcvbn",
 ]
 
@@ -1307,15 +1307,6 @@ dependencies = [
  "itoa 1.0.1",
  "ryu",
  "serde",
-]
-
-[[package]]
-name = "sha1"
-version = "0.6.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c1da05c97445caa12d05e848c4a4fcbbea29e748ac28f7e80e9b010392063770"
-dependencies = [
- "sha1_smol",
 ]
 
 [[package]]
