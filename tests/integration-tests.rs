@@ -44,7 +44,8 @@ mod integration_tests {
     #[test]
     fn can_check_keepass_db_against_offline_list_of_hashes() {
         let entries = make_test_entries_from_keepass_4_database_requiring_keyfile();
-        let hash_file = PathBuf::from("../hibp/pwned-passwords-sha1-ordered-by-count-v8.txt");
+        let hash_file = PathBuf::from("tests/test-files/abbreviated_hibp_hashes.txt");
+        // let hash_file = PathBuf::from("../hibp/pwned-passwords-sha1-ordered-by-count-v8.txt");
 
         let breached_entries =
             check_database_offline(hash_file, &entries, VisibilityPreference::Hide).unwrap();

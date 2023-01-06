@@ -155,20 +155,41 @@ pub fn check_database_offline(
     }
 
     let file = BufReader::new(&f);
-    for line in file.lines() {
-        let this_line = line?[..40].to_string();
-        this_chunk.push(this_line);
-        if this_chunk.len() * 48 > chunk_size {
-            match check_this_chunk(&entries, &this_chunk) {
-                Ok(mut vec_of_breached_entries) => {
-                    breached_entries.append(&mut vec_of_breached_entries)
+    if chunk_size / 48 > passwords_file_size {
+        // Passwords file size less than size of single chunk
+        // So we'll just do them all as one "chunk"
+        let mut whole_file_as_one_chunk = vec![];
+        for line in file.lines() {
+            // Assume hash digest is only first 40 characters.
+            whole_file_as_one_chunk.push(line?[..40].to_string());
+        }
+        match check_this_chunk(&entries, &whole_file_as_one_chunk) {
+            Ok(mut vec_of_breached_entries) => {
+                breached_entries.append(&mut vec_of_breached_entries)
+            }
+            Err(_e) => eprintln!("Found no breached entries"),
+        }
+    } else {
+        // Passwords file size is greater than one chunk,
+        // so we'll go by chunks to avoid over-using system memory
+        for line in file.lines() {
+            let this_line = line?[..40].to_string();
+            this_chunk.push(this_line);
+            if this_chunk.len() * 48 > chunk_size {
+                match check_this_chunk(&entries, &this_chunk) {
+                    Ok(mut vec_of_breached_entries) => {
+                        breached_entries.append(&mut vec_of_breached_entries)
+                    }
+                    Err(_e) => eprintln!("Error checking this chunk against offline hash file."),
                 }
-                Err(_e) => eprintln!("found no breached entries in this chunk"),
+                if progress_bar_visibility == VisibilityPreference::Show {
+                    pb.inc(chunk_size as u64);
+                }
+                this_chunk.clear();
             }
-            if progress_bar_visibility == VisibilityPreference::Show {
-                pb.inc(chunk_size as u64);
-            }
-            this_chunk.clear();
+            // Worried this function, as written, does NOT check the last
+            // chunk_size/48-1 lines of the inputted password hash file, since
+            // that last chunk is never filled to chunk_size
         }
     }
     if progress_bar_visibility == VisibilityPreference::Show {

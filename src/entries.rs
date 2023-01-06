@@ -103,7 +103,6 @@ pub fn build_entries_from_keepass_db(
                         .to_uppercase(),
                 };
                 if !this_entry.pass.is_empty() {
-                    eprintln!("pushing entry {:?}", this_entry);
                     entries.push(this_entry);
                 }
             }
