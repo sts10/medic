@@ -10,6 +10,7 @@ rpassword = "7"
 keepass = "0.5"
 sha1_smol = "1.0"
 zxcvbn = "2"
-clap = { version = "3.0.14", features = ["derive"] }
+# clap = { version = "3.0.14", features = ["derive"] }
+clap = { version = "4", features = ["derive"] }
 csv = "1.1"
-indicatif = "0.16.2"
+indicatif = "0.16"

@@ -12,7 +12,7 @@ struct Args {
     verbose: bool,
 
     /// Provide key file, if unlocking the KeePass databases requires one
-    #[clap(short = 'k', long = "keyfile", parse(from_os_str))]
+    #[clap(short = 'k', long = "keyfile")]
     keyfile: Option<PathBuf>,
 
     /// Check passwords against breached passwords online via the HaveIBeenPwned API. More info
@@ -21,9 +21,9 @@ struct Args {
     #[clap(long = "online")]
     online: bool,
 
-    /// Provide file containing SHA-1 hashes of passwords to check database against. To download a copy of very large list of
-    /// password hashes from HaveIBeenPwned, go to: https://haveibeenpwned.com/Passwords
-    #[clap(short = 'h', long = "hashfile", parse(from_os_str))]
+    /// Provide file containing SHA-1 hashes of passwords to check database against. To download a copy of a
+    /// very large list of password hashes from HaveIBeenPwned, go to: https://haveibeenpwned.com/Passwords
+    #[clap(short = 'h', long = "hashfile")]
     hash_file: Option<PathBuf>,
 
     /// Check database for duplicate passwords
@@ -40,7 +40,7 @@ struct Args {
 
     /// KeePass database to check. Can either be a kdbx file or an exported CSV version of a
     /// KeePass database.
-    #[clap(name = "KEEPASS DATABASE FILE", parse(from_os_str))]
+    #[clap(name = "KEEPASS DATABASE FILE")]
     keepass_db: PathBuf,
 }
 
@@ -66,9 +66,9 @@ fn main() {
     }
 
     if hash_file == None && !check_online && !opt.check_duplicate && !opt.check_weak {
-        println!("Whoops! I have nothing the check against");
-        println!("You must either:\n1. Provide a file with hashes of passwords to check against \nOR\n2. Use the --online flag to check your passwords online via HaveIBeenPwned API\nOR\n3. Use one or both of -d or -w flags to check for duplicate and/or weak passwords");
-        println!("Run --help for more information");
+        eprintln!("Whoops! I have nothing the check against");
+        eprintln!("You must either:\n1. Provide a file with hashes of passwords to check against \nOR\n2. Use the --online flag to check your passwords online via HaveIBeenPwned API\nOR\n3. Use one or both of -d or -w flags to check for duplicate and/or weak passwords");
+        eprintln!("Run --help for more information");
         return;
     }
 
