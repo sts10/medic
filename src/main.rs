@@ -65,8 +65,8 @@ fn main() {
         Destination::Terminal => (),
     }
 
-    if hash_file == None && !check_online && !opt.check_duplicate && !opt.check_weak {
-        eprintln!("Whoops! I have nothing the check against");
+    if hash_file.is_none() && !check_online && !opt.check_duplicate && !opt.check_weak {
+        eprintln!("Whoops! I have nothing the check against.");
         eprintln!("You must either:\n1. Provide a file with hashes of passwords to check against \nOR\n2. Use the --online flag to check your passwords online via HaveIBeenPwned API\nOR\n3. Use one or both of -d or -w flags to check for duplicate and/or weak passwords");
         eprintln!("Run --help for more information");
         return;

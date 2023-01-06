@@ -113,7 +113,7 @@ fn check_password_online(pass: &str) -> reqwest::Result<usize> {
     // API requires us to submit just the first 5 characters of the hash
     let url = format!("https://api.pwnedpasswords.com/range/{}", prefix);
 
-    let response = reqwest::blocking::get(&url)?;
+    let response = reqwest::blocking::get(url)?;
     let body = response.text()?;
 
     // Reponse is a series of lines like
@@ -163,11 +163,11 @@ pub fn check_database_offline(
             // Assume hash digest is only first 40 characters.
             whole_file_as_one_chunk.push(line?[..40].to_string());
         }
-        match check_this_chunk(&entries, &whole_file_as_one_chunk) {
+        match check_this_chunk(entries, &whole_file_as_one_chunk) {
             Ok(mut vec_of_breached_entries) => {
                 breached_entries.append(&mut vec_of_breached_entries)
             }
-            Err(_e) => eprintln!("Found no breached entries"),
+            Err(e) => eprintln!("Error: {}", e),
         }
     } else {
         // Passwords file size is greater than one chunk,
@@ -176,11 +176,13 @@ pub fn check_database_offline(
             let this_line = line?[..40].to_string();
             this_chunk.push(this_line);
             if this_chunk.len() * 48 > chunk_size {
-                match check_this_chunk(&entries, &this_chunk) {
+                match check_this_chunk(entries, &this_chunk) {
                     Ok(mut vec_of_breached_entries) => {
                         breached_entries.append(&mut vec_of_breached_entries)
                     }
-                    Err(_e) => eprintln!("Error checking this chunk against offline hash file."),
+                    Err(e) => {
+                        eprintln!("Error checking this chunk against offline hash file: {}", e)
+                    }
                 }
                 if progress_bar_visibility == VisibilityPreference::Show {
                     pb.inc(chunk_size as u64);
