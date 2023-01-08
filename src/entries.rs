@@ -80,10 +80,10 @@ pub fn build_entries_from_keepass_db(
                     Some(p) => p,
                     None => {
                         eprintln!(
-                            "Error reading a password for entry:\n{}, username {}, on site {}.",
-                            e.get_title().unwrap_or("Unknown Title"),
+                            "Error reading a password for entry titled: \"{}\", username: \"{}\", on site {}.",
+                            e.get_title().unwrap_or("Unknown"),
                             e.get_username().unwrap_or("Unknown"),
-                            e.get("URL").unwrap_or("Unknown URL"),
+                            e.get("URL").unwrap_or("Unknown"),
                         );
                         // return None;
                         continue;

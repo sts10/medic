@@ -167,7 +167,7 @@ pub fn check_database_offline(
             Ok(mut vec_of_breached_entries) => {
                 breached_entries.append(&mut vec_of_breached_entries)
             }
-            Err(e) => eprintln!("Error: {}", e),
+            Err(e) => eprintln!("Error checking passwords against hash file: {}", e),
         }
     } else {
         // Passwords file size is greater than one chunk,
@@ -181,7 +181,7 @@ pub fn check_database_offline(
                         breached_entries.append(&mut vec_of_breached_entries)
                     }
                     Err(e) => {
-                        eprintln!("Error checking this chunk against offline hash file: {}", e)
+                        eprintln!("Error checking passwords against hash file: {}", e)
                     }
                 }
                 if progress_bar_visibility == VisibilityPreference::Show {
@@ -189,9 +189,13 @@ pub fn check_database_offline(
                 }
                 this_chunk.clear();
             }
-            // Worried this function, as written, does NOT check the last
-            // chunk_size/48-1 lines of the inputted password hash file, since
-            // that last chunk is never filled to chunk_size
+        }
+        // Append the very last chunk for breached entries
+        match check_this_chunk(entries, &this_chunk) {
+            Ok(mut vec_of_breached_entries) => {
+                breached_entries.append(&mut vec_of_breached_entries)
+            }
+            Err(e) => eprintln!("Error checking passwords against hash file: {}", e),
         }
     }
     if progress_bar_visibility == VisibilityPreference::Show {

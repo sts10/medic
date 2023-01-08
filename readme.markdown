@@ -22,29 +22,21 @@ If you're familiar with [1Password's Watchtower feature](https://support.1passwo
 ## Usage
 
 ```text
-USAGE:
-    medic [FLAGS] [OPTIONS] <KEEPASS DATABASE FILE>
+Usage: medic [OPTIONS] <KEEPASS DATABASE FILE>
 
-FLAGS:
-    -d, --duplicate    Check database for duplicate passwords
-    -w, --weak         Check database for weak passwords
-        --help         Prints help information
-        --online       Check passwords against breached passwords online via the HaveIBeenPwned API. More info here:
-                       https://www.troyhunt.com/ive-
-                       just-launched-pwned-passwords-version-2/#cloudflareprivacyandkanonymity
-    -V, --version      Prints version information
-    -v, --verbose      Give verbose output
+Arguments:
+  <KEEPASS DATABASE FILE>  KeePass database to check. Can either be a kdbx file or an exported CSV version of a KeePass database
 
-OPTIONS:
-    -h, --hashfile <hash_file>    Provide password hash file to check database against. To download a copy of very large
-                                  list of password hashes from HaveIBeenPwned, go to:
-                                  https://haveibeenpwned.com/Passwords
-    -k, --keyfile <keyfile>       Provide key file, if unlocking the KeePass databases requires one
-    -o, --output <output>         Print results of health check to a file
-
-ARGS:
-    <KEEPASS DATABASE FILE>    KeePass database to check. Can either be a kdbx file or an exported CSV version of a
-                               KeePass database.
+Options:
+      --debug                 Use debug mode, which, among other things, displayed received arguments and hides progress bar when checking passwords against a file of hashed passwords
+  -k, --keyfile <KEYFILE>     Provide key file, if unlocking the KeePass databases requires one
+      --online                Check passwords against breached passwords online via the HaveIBeenPwned API. More info here: https://www.troyhunt.com/ive-just-launched-pwned-passwords-version-2/#cloudflareprivacyandkanonymity
+  -a, --hashfile <HASH_FILE>  Provide file containing SHA-1 hashes of passwords to check database against. To download a copy of a very large list of password SHA-1 hashes from HaveIBeenPwned, go to: https://haveibeenpwned.com/Passwords
+  -d, --duplicate             Check database for duplicate passwords
+  -w, --weak                  Check database for weak passwords
+  -o, --output <OUTPUT>       Print results of health check to a file
+  -h, --help                  Print help information
+  -V, --version               Print version information
 ```
 
 ### Examples
@@ -100,6 +92,8 @@ More info [here](https://github.com/sseemayer/keepass-rs/issues/15#issuecomment-
 ## Running tests
 
 `cargo test --release`, though you'll need a file with a list of hashed passwords to pass one of the tests. 
+
+Note that all test databases passwords are `password`.
 
 ## Checking for security vulnerabilities in Medic's dependencies
 

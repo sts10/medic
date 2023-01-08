@@ -7,9 +7,10 @@ use std::path::PathBuf;
 #[derive(Parser, Debug)]
 #[clap(name = "medic", version)]
 struct Args {
-    /// Give verbose output
-    #[clap(short = 'v', long = "verbose")]
-    verbose: bool,
+    /// Use debug mode, which, among other things, displays received arguments and hides
+    /// progress bar when checking passwords against a file of hashed passwords
+    #[clap(long = "debug")]
+    debug: bool,
 
     /// Provide key file, if unlocking the KeePass databases requires one
     #[clap(short = 'k', long = "keyfile")]
@@ -22,8 +23,8 @@ struct Args {
     online: bool,
 
     /// Provide file containing SHA-1 hashes of passwords to check database against. To download a copy of a
-    /// very large list of password hashes from HaveIBeenPwned, go to: https://haveibeenpwned.com/Passwords
-    #[clap(short = 'h', long = "hashfile")]
+    /// very large list of password SHA-1 hashes from HaveIBeenPwned, go to: https://haveibeenpwned.com/Passwords
+    #[clap(short = 'a', long = "hashfile")]
     hash_file: Option<PathBuf>,
 
     /// Check database for duplicate passwords
@@ -46,13 +47,18 @@ struct Args {
 
 fn main() {
     let opt = Args::parse();
-    if opt.verbose {
-        println!("{:?}", opt);
+    if opt.debug {
+        println!("Arguments received:\n{:?}", opt);
     }
     let keepass_db_file_path = opt.keepass_db;
     let hash_file: Option<PathBuf> = opt.hash_file;
     let keyfile: Option<PathBuf> = opt.keyfile;
     let check_online = opt.online;
+    let progress_bar_visibility = if opt.debug {
+        VisibilityPreference::Hide
+    } else {
+        VisibilityPreference::Show
+    };
     let output_dest: Destination = match opt.output {
         Some(file_path) => Destination::FilePath(file_path),
         None => Destination::Terminal,
@@ -93,7 +99,7 @@ fn main() {
     if let Some(hash_file) = hash_file {
         println!("Checking KeePass database against provided file of hashed passwords");
         let breached_entries =
-            match check_database_offline(hash_file, &entries, VisibilityPreference::Show) {
+            match check_database_offline(hash_file, &entries, progress_bar_visibility) {
                 Ok(breached_entries) => breached_entries,
                 Err(e) => panic!("Error checking database offline: {}", e),
             };
@@ -113,7 +119,7 @@ fn main() {
                         Err(e) => panic!("Error: {}", e),
                     };
                     present_breached_entries(&breached_entries, &output_dest)
-                        .expect("Error presenting breached errors");
+                        .expect("Error presenting breached entries");
                 }
             }
             Err(e) => eprintln!("Error reading your answer: {}", e),
