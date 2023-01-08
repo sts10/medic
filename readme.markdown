@@ -49,13 +49,13 @@ Options:
 
 - `medic --online -w -k=test-files/test_key_file test-files/test_db.kdbx` checks the passwords of `test_db.kdbx` -- which requires key file `test_key_file` -- using the HaveIBeenPwned API, as well as looks for weak passwords. Prints results to terminal.
 
-- `medic -h=../pwned-passwords-sha1-ordered-by-count-v4.txt my_db.kdbx` checks the passwords of `my_db.kdbx` against the password hashes found in `../pwned-passwords-sha1-ordered-by-count-v4.txt`, which is a large text file of password hashes. Medic will display any of the accounts in the `my_db.kdbx` with passwords that appear in the list to the terminal.
+- `medic -a=../pwned-passwords-sha1-ordered-by-count-v4.txt my_db.kdbx` checks the passwords of `my_db.kdbx` against the password hashes found in `../pwned-passwords-sha1-ordered-by-count-v4.txt`, which is a large text file of password hashes. Medic will display any of the accounts in the `my_db.kdbx` with passwords that appear in the list to the terminal.
 
 - `medic -dw passwords.kdbx` checks the passwords of `passwords.kdbx` for weak and duplicate passwords.
 
 - `medic -dw passwords.kdbx --output=./password-report.txt` checks the passwords of `passwords.kdbx` for weak and duplicate passwords. Results are printed to a text file located at `./password-report.txt`.
 
-- `medic -d -h=pwnedpasswords.txt kp_database_exported_csv_file.csv` checks an exported csv file against the hashes in `pwnedpasswords.txt`, as well as searches for duplicate passwords.
+- `medic -d -a=pwnedpasswords.txt kp_database_exported_csv_file.csv` checks an exported csv file against the hashes in `pwnedpasswords.txt`, as well as searches for duplicate passwords.
 
 ## Installation/Setup
 
@@ -86,7 +86,7 @@ More info [here](https://github.com/sseemayer/keepass-rs/issues/15#issuecomment-
 3. Export your KeePass database to a CSV file (In KeePassXC: `Database` menu > "Export to CSV...") (Heads up, this file includes your passwords, so be careful). 
 4. Lock your KeePass database.
 5. Install Medic using instructions above.
-6. Run Medic by entering the following command: `medic -h=pwnedpasswords.txt -dw <my-exported-database>.csv`. Note any compromised passwords and change them ASAP.
+6. Run Medic by entering the following command: `medic -a=pwnedpassword_hashes.txt -dw <my-exported-database>.csv`. Note any compromised passwords and change them ASAP.
 7. When finished, securely delete that exported CSV file. If on MacOS, run `srm <my-exported-database>.csv`. On Ubuntu-based Linux distributions, try `shred -ufv --iterations=60 <my-exported-database>.csv`. Your sensitive data should now be safely deleted, but feel free to securely delete Medic itself if so inclined.
 
 ## Running tests
