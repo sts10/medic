@@ -39,13 +39,26 @@ mod integration_tests {
         assert_eq!(breached_entries.unwrap().len(), 3);
     }
 
-    // you're going to want to run this test by running `cargo test --release`, else it's going to take
-    // a real long time
     #[test]
-    fn can_check_keepass_db_against_offline_list_of_hashes() {
+    fn can_check_keepass_db_against_small_offline_list_of_hashes() {
         let entries = make_test_entries_from_keepass_4_database_requiring_keyfile();
         let hash_file = PathBuf::from("tests/test-files/abbreviated_hibp_hashes.txt");
-        // let hash_file = PathBuf::from("../hibp/pwned-passwords-sha1-ordered-by-count-v8.txt");
+
+        let breached_entries =
+            check_database_offline(hash_file, &entries, VisibilityPreference::Hide).unwrap();
+        assert_eq!(breached_entries.len(), 3);
+    }
+    // The test below checks a test KeePass db against an externally provided hash file at
+    // "tests/test-files/abbreviated_hibp_hashes.txt"
+    // Which can be the full HaveIBeenPwned Password file (available at
+    // https://haveibeenpwned.com/Passwords
+    // The test is `ignore`d by default since (a) devs need to have the HIBP file available
+    // locally and (b) it takes a long time (recommend you run `cargo test --release`)
+    #[test]
+    #[ignore]
+    fn can_check_keepass_db_against_full_haveibeenpwned_local_list_of_hashes() {
+        let entries = make_test_entries_from_keepass_4_database_requiring_keyfile();
+        let hash_file = PathBuf::from("../hibp/pwned-passwords-sha1-ordered-by-count-v8.txt");
 
         let breached_entries =
             check_database_offline(hash_file, &entries, VisibilityPreference::Hide).unwrap();
