@@ -150,53 +150,33 @@ pub fn check_database_offline(
         pb.set_style(
             ProgressStyle::default_bar()
                 .template("{spinner} [{elapsed_precise}] [{bar:40}] ({eta})"),
-            // .progress_chars("#>-"),
         );
     }
 
     let file = BufReader::new(&f);
-    if chunk_size / 48 > passwords_file_size {
-        // Passwords file size less than size of single chunk
-        // So we'll just do them all as one "chunk"
-        let mut whole_file_as_one_chunk = vec![];
-        for line in file.lines() {
-            // Assume hash digest is only first 40 characters.
-            whole_file_as_one_chunk.push(line?[..40].to_string());
-        }
-        match check_this_chunk(entries, &whole_file_as_one_chunk) {
-            Ok(mut vec_of_breached_entries) => {
-                breached_entries.append(&mut vec_of_breached_entries)
-            }
-            Err(e) => eprintln!("Error checking passwords against hash file: {}", e),
-        }
-    } else {
-        // Passwords file size is greater than one chunk,
-        // so we'll go by chunks to avoid over-using system memory
-        for line in file.lines() {
-            let this_line = line?[..40].to_string();
-            this_chunk.push(this_line);
-            if this_chunk.len() * 48 > chunk_size {
-                match check_this_chunk(entries, &this_chunk) {
-                    Ok(mut vec_of_breached_entries) => {
-                        breached_entries.append(&mut vec_of_breached_entries)
-                    }
-                    Err(e) => {
-                        eprintln!("Error checking passwords against hash file: {}", e)
-                    }
+    // Use "chunks" to avoid over-using system memory
+    for line in file.lines() {
+        let this_line = line?[..40].to_string();
+        this_chunk.push(this_line);
+        if this_chunk.len() * 48 > chunk_size {
+            match check_this_chunk(entries, &this_chunk) {
+                Ok(mut vec_of_breached_entries) => {
+                    breached_entries.append(&mut vec_of_breached_entries)
                 }
-                if progress_bar_visibility == VisibilityPreference::Show {
-                    pb.inc(chunk_size as u64);
+                Err(e) => {
+                    eprintln!("Error checking passwords against hash file: {}", e)
                 }
-                this_chunk.clear();
             }
-        }
-        // Append the very last chunk for breached entries
-        match check_this_chunk(entries, &this_chunk) {
-            Ok(mut vec_of_breached_entries) => {
-                breached_entries.append(&mut vec_of_breached_entries)
+            if progress_bar_visibility == VisibilityPreference::Show {
+                pb.inc(chunk_size as u64);
             }
-            Err(e) => eprintln!("Error checking passwords against hash file: {}", e),
+            this_chunk.clear();
         }
+    }
+    // Append the very last chunk for breached entries
+    match check_this_chunk(entries, &this_chunk) {
+        Ok(mut vec_of_breached_entries) => breached_entries.append(&mut vec_of_breached_entries),
+        Err(e) => eprintln!("Error checking passwords against hash file: {}", e),
     }
     if progress_bar_visibility == VisibilityPreference::Show {
         pb.finish_with_message("Done.");
