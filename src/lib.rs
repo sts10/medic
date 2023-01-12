@@ -130,22 +130,26 @@ fn check_password_online(pass: &str) -> reqwest::Result<usize> {
     Ok(0)
 }
 
+use std::collections::HashSet;
 pub fn check_database_offline(
     hash_file: PathBuf,
     entries: &[Entry],
     progress_bar_visibility: VisibilityPreference,
 ) -> io::Result<Vec<Entry>> {
-    let mut this_chunk = Vec::new();
+    eprintln!("Checking offline");
+    // Use "chunks" to avoid over-using system memory
+    // times via `cargo test --release can_check_offline --no-run && time cargo test --release can_check_offline -- --nocapture`
+    let digests_per_chunk = 10_000_000;
+    let mut this_chunk = HashSet::with_capacity(digests_per_chunk);
     let mut breached_entries: Vec<Entry> = Vec::new();
 
     let f = File::open(hash_file)?;
     let passwords_file_size = f.metadata()?.len() as usize;
 
-    // times via `cargo test --release can_check_offline --no-run && time cargo test --release can_check_offline -- --nocapture`
-    // let chunk_size = 1_000_000_000; // real 1m6.354s
-    let chunk_size = 500_000_000; // real 1m7.686s
-
     let pb = ProgressBar::new(passwords_file_size as u64);
+    // Ugh, this is some strange int I need for the progress bar
+    // to work properly
+    let strange_chunk_size_measure_for_progress_bar = digests_per_chunk * 48;
     if progress_bar_visibility == VisibilityPreference::Show {
         pb.set_style(
             ProgressStyle::default_bar()
@@ -154,11 +158,12 @@ pub fn check_database_offline(
     }
 
     let file = BufReader::new(&f);
-    // Use "chunks" to avoid over-using system memory
     for line in file.lines() {
+        // is this to_string too expensive?
         let this_line = line?[..40].to_string();
-        this_chunk.push(this_line);
-        if this_chunk.len() * 48 > chunk_size {
+        this_chunk.insert(this_line);
+        if this_chunk.len() > digests_per_chunk {
+            eprintln!("Ready to check a chunk");
             match check_this_chunk(entries, &this_chunk) {
                 Ok(mut vec_of_breached_entries) => {
                     breached_entries.append(&mut vec_of_breached_entries)
@@ -168,7 +173,7 @@ pub fn check_database_offline(
                 }
             }
             if progress_bar_visibility == VisibilityPreference::Show {
-                pb.inc(chunk_size as u64);
+                pb.inc(strange_chunk_size_measure_for_progress_bar as u64);
             }
             this_chunk.clear();
         }
@@ -184,17 +189,16 @@ pub fn check_database_offline(
     Ok(breached_entries)
 }
 
-fn check_this_chunk(entries: &[Entry], chunk: &[String]) -> io::Result<Vec<Entry>> {
+fn check_this_chunk(entries: &[Entry], chunk: &HashSet<String>) -> io::Result<Vec<Entry>> {
     let mut breached_entries = Vec::new();
 
-    for line in chunk {
-        let this_hash = &line[..40];
-
-        for entry in entries {
-            if this_hash == entry.digest {
-                breached_entries.push(entry.clone());
-            }
+    for entry in entries {
+        // Since we're using a HashSet, this SHOULD be pretty quick...
+        eprintln!("About to call a chunk.contains");
+        if chunk.contains(&entry.digest) {
+            breached_entries.push(entry.clone());
         }
+        eprintln!("Done calling a chunk.contains");
     }
     Ok(breached_entries)
 }
