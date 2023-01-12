@@ -143,7 +143,8 @@ pub fn check_database_offline(
 
     // times via `cargo test --release can_check_offline --no-run && time cargo test --release can_check_offline -- --nocapture`
     // let chunk_size = 1_000_000_000; // real 1m6.354s
-    let chunk_size = 500_000_000; // real 1m7.686s
+    // let chunk_size = 500_000_000; // real 1m7.686s
+    let chunk_size = 1_000_000 / 48; //
 
     let pb = ProgressBar::new(passwords_file_size as u64);
     if progress_bar_visibility == VisibilityPreference::Show {
@@ -185,18 +186,69 @@ pub fn check_database_offline(
 }
 
 fn check_this_chunk(entries: &[Entry], chunk: &[String]) -> io::Result<Vec<Entry>> {
-    let mut breached_entries = Vec::new();
+    // let maybe_breached_entries = find_maybes_in_this_chunk(entries, chunk);
+    if are_there_maybes_in_this_chunk(entries, chunk) == false {
+        // Nothing to check more thoroughly in this chunk!
+        eprintln!("No maybes in this chunk. I get to take a shortcut!");
+        return Ok(vec![]);
+    } else {
+        eprintln!("Found at least 1 maybe in this chunk, so checking it more thoroughly.");
+    }
+    let mut definitely_breached_entries = Vec::new();
 
     for line in chunk {
         let this_hash = &line[..40];
 
+        // Only need to check maybes this thoroughly
         for entry in entries {
             if this_hash == entry.digest {
-                breached_entries.push(entry.clone());
+                definitely_breached_entries.push(entry.clone());
             }
         }
     }
-    Ok(breached_entries)
+    Ok(definitely_breached_entries)
+}
+
+use xorf::{BinaryFuse8, Filter};
+fn are_there_maybes_in_this_chunk(entries: &[Entry], chunk: &[String]) -> bool {
+    let mut keys = Vec::new();
+    for line in chunk {
+        let hash_as_decimal: u64 = truncate_hash_to_u64(&line);
+        keys.push(hash_as_decimal);
+    }
+
+    let filter = BinaryFuse8::try_from(&keys).unwrap(); // slow?!
+                                                        // let filter = BinaryFuse16::try_from(&keys).unwrap();
+                                                        // let filter = BinaryFuse32::try_from(&keys).unwrap();
+    eprintln!("Filter built for this chunk. Now checking entries against filter...");
+    for entry in entries {
+        if filter.contains(&truncate_hash_to_u64(&entry.digest)) {
+            return true;
+        }
+    }
+    false
+}
+// fn find_maybes_in_this_chunk(entries: &[Entry], chunk: &[String]) -> Vec<Entry> {
+//     let mut maybe_breached_entries = Vec::new();
+//     let mut keys = Vec::new();
+//     for line in chunk {
+//         let hash_as_decimal: u64 = truncate_hash_to_u64(&line);
+//         keys.push(hash_as_decimal);
+//     }
+
+//     let filter = BinaryFuse8::try_from(&keys).unwrap();
+//     for entry in entries {
+//         if filter.contains(&truncate_hash_to_u64(&entry.digest)) {
+//             // painful .to_owned call that I need to fix
+//             maybe_breached_entries.push(entry.to_owned());
+//         }
+//     }
+//     maybe_breached_entries
+// }
+
+fn truncate_hash_to_u64(hash: &str) -> u64 {
+    let truncated_hash = hash[..13].to_string();
+    u64::from_str_radix(&truncated_hash, 32).unwrap()
 }
 
 pub fn make_digest_map(entries: &[Entry]) -> io::Result<HashMap<String, Vec<Entry>>> {

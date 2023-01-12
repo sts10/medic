@@ -55,7 +55,7 @@ mod integration_tests {
     // The test is `ignore`d by default since (a) devs need to have the HIBP file available
     // locally and (b) it takes a long time (recommend you run `cargo test --release`)
     #[test]
-    #[ignore]
+    // #[ignore]
     fn can_check_keepass_db_against_full_haveibeenpwned_local_list_of_hashes() {
         let entries = make_test_entries_from_keepass_4_database_requiring_keyfile();
         let hash_file = PathBuf::from("../hibp/pwned-passwords-sha1-ordered-by-count-v8.txt");
