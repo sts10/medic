@@ -14,3 +14,4 @@ clap = { version = "4.0.32", features = ["derive"] }
 csv = "1.1"
 indicatif = "0.16"
 xorf = "0.8.1"
+hex = "0.4.3"

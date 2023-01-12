@@ -245,9 +245,15 @@ fn are_there_maybes_in_this_chunk(entries: &[Entry], chunk: &[String]) -> bool {
 //     maybe_breached_entries
 // }
 
+/// Takes a SHA1 hash digest as a slice and converts its first
+/// 16 characters into a u64
 fn truncate_hash_to_u64(hash: &str) -> u64 {
-    let truncated_hash = hash[..13].to_string();
-    u64::from_str_radix(&truncated_hash, 32).unwrap()
+    let truncated_hash = hash[..16].to_string();
+    let as_bytes: [u8; 8] = hex::decode(truncated_hash)
+        .unwrap()
+        .try_into()
+        .expect("slice with incorrect length");
+    u64::from_be_bytes(as_bytes)
 }
 
 pub fn make_digest_map(entries: &[Entry]) -> io::Result<HashMap<String, Vec<Entry>>> {
