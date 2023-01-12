@@ -141,10 +141,10 @@ pub fn check_database_offline(
     let f = File::open(hash_file)?;
     let passwords_file_size = f.metadata()?.len() as usize;
 
-    // times via `cargo test --release can_check_offline --no-run && time cargo test --release can_check_offline -- --nocapture`
+    // times via `cargo test --release can_check_keepass_db_against_full_haveibeenpwned_local_list_of_hashes --no-run && time cargo test --release can_check_keepass_db_against_full_haveibeenpwned_local_list_of_hashes -- --nocapture`
+    // times via `cargo test --release can_check_keepass_db_against_full_haveibeenpwned_local_list_of_hashes --no-run && time cargo test --release can_check_keepass_db_against_full_haveibeenpwned_local_list_of_hashes`
     // let chunk_size = 1_000_000_000; // real 1m6.354s
-    // let chunk_size = 500_000_000; // real 1m7.686s
-    let chunk_size = 1_000_000 / 48; //
+    let chunk_size = 500_000_000; // real 1m7.686s
 
     let pb = ProgressBar::new(passwords_file_size as u64);
     if progress_bar_visibility == VisibilityPreference::Show {
