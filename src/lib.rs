@@ -28,10 +28,15 @@ pub enum Destination {
     Terminal,
     FilePath(String),
 }
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum VisibilityPreference {
     Show,
     Hide,
+}
+#[derive(Debug, PartialEq, Clone)]
+pub enum BreachedPasswordState {
+    Sha1,
+    Clear,
 }
 
 pub fn get_entries(file_path: PathBuf, keyfile_path: Option<PathBuf>) -> Option<Vec<Entry>> {
@@ -133,7 +138,8 @@ fn check_password_online(pass: &str) -> reqwest::Result<usize> {
 pub fn check_database_offline(
     hash_file: PathBuf,
     entries: &[Entry],
-    progress_bar_visibility: VisibilityPreference,
+    progress_bar_visibility: &VisibilityPreference,
+    breached_password_state: BreachedPasswordState,
 ) -> io::Result<Vec<Entry>> {
     let mut this_chunk = Vec::new();
     let mut breached_entries: Vec<Entry> = Vec::new();
@@ -146,7 +152,7 @@ pub fn check_database_offline(
     let chunk_size = 500_000_000; // real 1m7.686s
 
     let pb = ProgressBar::new(passwords_file_size as u64);
-    if progress_bar_visibility == VisibilityPreference::Show {
+    if progress_bar_visibility == &VisibilityPreference::Show {
         pb.set_style(
             ProgressStyle::default_bar()
                 .template("{spinner} [{elapsed_precise}] [{bar:40}] ({eta})"),
@@ -154,12 +160,12 @@ pub fn check_database_offline(
     }
 
     let file = BufReader::new(&f);
-    // Use "chunks" to avoid over-using system memory
+    // Use "chunks" to avoid over-loading system memory
     for line in file.lines() {
-        let this_line = line?[..40].to_string();
-        this_chunk.push(this_line);
+        // let this_line = line?[..40].to_string();
+        this_chunk.push(line?); //.to_string());
         if this_chunk.len() * 48 > chunk_size {
-            match check_this_chunk(entries, &this_chunk) {
+            match check_this_chunk(entries, &this_chunk, &breached_password_state) {
                 Ok(mut vec_of_breached_entries) => {
                     breached_entries.append(&mut vec_of_breached_entries)
                 }
@@ -167,32 +173,44 @@ pub fn check_database_offline(
                     eprintln!("Error checking passwords against hash file: {}", e)
                 }
             }
-            if progress_bar_visibility == VisibilityPreference::Show {
+            if progress_bar_visibility == &VisibilityPreference::Show {
                 pb.inc(chunk_size as u64);
             }
             this_chunk.clear();
         }
     }
     // Append the very last chunk for breached entries
-    match check_this_chunk(entries, &this_chunk) {
+    match check_this_chunk(entries, &this_chunk, &breached_password_state) {
         Ok(mut vec_of_breached_entries) => breached_entries.append(&mut vec_of_breached_entries),
         Err(e) => eprintln!("Error checking passwords against hash file: {}", e),
     }
-    if progress_bar_visibility == VisibilityPreference::Show {
+    if progress_bar_visibility == &VisibilityPreference::Show {
         pb.finish_with_message("Done.");
     }
     Ok(breached_entries)
 }
 
-fn check_this_chunk(entries: &[Entry], chunk: &[String]) -> io::Result<Vec<Entry>> {
+fn check_this_chunk(
+    entries: &[Entry],
+    chunk: &[String],
+    breached_password_state: &BreachedPasswordState,
+) -> io::Result<Vec<Entry>> {
     let mut breached_entries = Vec::new();
 
     for line in chunk {
-        let this_hash = &line[..40];
+        if breached_password_state == &BreachedPasswordState::Sha1 {
+            let this_hash = &line[..40];
 
-        for entry in entries {
-            if this_hash == entry.digest {
-                breached_entries.push(entry.clone());
+            for entry in entries {
+                if this_hash == entry.digest {
+                    breached_entries.push(entry.clone());
+                }
+            }
+        } else if breached_password_state == &BreachedPasswordState::Clear {
+            for entry in entries {
+                if line == &entry.pass {
+                    breached_entries.push(entry.clone());
+                }
             }
         }
     }

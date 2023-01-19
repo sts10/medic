@@ -29,15 +29,16 @@ Arguments:
   <KEEPASS DATABASE FILE>  KeePass database to check. Can either be a kdbx file or an exported CSV version of a KeePass database
 
 Options:
-      --debug                 Use debug mode, which, among other things, displayed received arguments and hides progress bar when checking passwords against a file of hashed passwords
-  -k, --keyfile <KEYFILE>     Provide key file, if unlocking the KeePass databases requires one
-      --online                Check passwords against breached passwords online via the HaveIBeenPwned API. More info here: https://www.troyhunt.com/ive-just-launched-pwned-passwords-version-2/#cloudflareprivacyandkanonymity
-  -a, --hashfile <HASH_FILE>  Provide file containing SHA-1 hashes of passwords to check database against. To download a copy of a very large list of password SHA-1 hashes from HaveIBeenPwned, go to: https://haveibeenpwned.com/Passwords
-  -d, --duplicate             Check database for duplicate passwords
-  -w, --weak                  Check database for weak passwords
-  -o, --output <OUTPUT>       Print results of health check to a file
-  -h, --help                  Print help information
-  -V, --version               Print version information
+      --debug                           Use debug mode, which, among other things, displays received arguments and hides progress bar when checking passwords against a file of hashed passwords
+  -k, --keyfile <KEYFILE>               Provide key file, if unlocking the KeePass databases requires one
+      --online                          Check passwords against breached passwords online via the HaveIBeenPwned API. More info here: https://www.troyhunt.com/ive-just-launched-pwned-passwords-version-2/#cloudflareprivacyandkanonymity
+  -p, --passwordsfile <PASSWORDS_FILE>  Provide file passwords to check database against. Passwords should be cleartext
+  -a, --hashfile <HASH_FILE>            Provide file containing SHA-1 hashes of passwords to check database against
+  -d, --duplicate                       Check database for duplicate passwords
+  -w, --weak                            Check database for weak passwords
+  -o, --output <OUTPUT>                 Print results of health check to a file
+  -h, --help                            Print help information
+  -V, --version                         Print version information
 ```
 
 ### Examples

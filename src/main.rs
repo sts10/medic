@@ -22,8 +22,11 @@ struct Args {
     #[clap(long = "online")]
     online: bool,
 
-    /// Provide file containing SHA-1 hashes of passwords to check database against. To download a copy of a
-    /// very large list of password SHA-1 hashes from HaveIBeenPwned, go to: https://haveibeenpwned.com/Passwords
+    /// Provide file passwords to check database against. Passwords should be cleartext.
+    #[clap(short = 'p', long = "passwordsfile")]
+    passwords_file: Option<PathBuf>,
+
+    /// Provide file containing SHA-1 hashes of passwords to check database against.
     #[clap(short = 'a', long = "hashfile")]
     hash_file: Option<PathBuf>,
 
@@ -51,6 +54,7 @@ fn main() {
         println!("Arguments received:\n{:?}", opt);
     }
     let keepass_db_file_path = opt.keepass_db;
+    let passwords_file: Option<PathBuf> = opt.passwords_file;
     let hash_file: Option<PathBuf> = opt.hash_file;
     let keyfile: Option<PathBuf> = opt.keyfile;
     let check_online = opt.online;
@@ -96,13 +100,32 @@ fn main() {
         present_duplicated_entries(digest_map, &output_dest)
             .expect("Error presenting duplicate passwords");
     }
+    if let Some(passwords_file) = passwords_file {
+        println!("Checking KeePass database against provided file of passwords");
+        let breached_entries = match check_database_offline(
+            passwords_file,
+            &entries,
+            &progress_bar_visibility,
+            BreachedPasswordState::Clear,
+        ) {
+            Ok(breached_entries) => breached_entries,
+            Err(e) => panic!("Error checking database offline: {}", e),
+        };
+
+        present_breached_entries(&breached_entries, &output_dest)
+            .expect("Error presenting breached entries");
+    }
     if let Some(hash_file) = hash_file {
         println!("Checking KeePass database against provided file of hashed passwords");
-        let breached_entries =
-            match check_database_offline(hash_file, &entries, progress_bar_visibility) {
-                Ok(breached_entries) => breached_entries,
-                Err(e) => panic!("Error checking database offline: {}", e),
-            };
+        let breached_entries = match check_database_offline(
+            hash_file,
+            &entries,
+            &progress_bar_visibility,
+            BreachedPasswordState::Sha1,
+        ) {
+            Ok(breached_entries) => breached_entries,
+            Err(e) => panic!("Error checking database offline: {}", e),
+        };
 
         present_breached_entries(&breached_entries, &output_dest)
             .expect("Error presenting breached entries");

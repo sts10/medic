@@ -40,12 +40,32 @@ mod integration_tests {
     }
 
     #[test]
+    fn can_check_keepass_db_against_small_offline_list_of_cleartext_passwords() {
+        let entries = make_test_entries_from_keepass_4_database_requiring_keyfile();
+        let passwords_file = PathBuf::from("tests/test-files/cleartext_passwords.txt");
+
+        let breached_entries = check_database_offline(
+            passwords_file,
+            &entries,
+            &VisibilityPreference::Hide,
+            BreachedPasswordState::Clear,
+        )
+        .unwrap();
+        assert_eq!(breached_entries.len(), 4);
+    }
+
+    #[test]
     fn can_check_keepass_db_against_small_offline_list_of_hashes() {
         let entries = make_test_entries_from_keepass_4_database_requiring_keyfile();
         let hash_file = PathBuf::from("tests/test-files/abbreviated_hibp_hashes.txt");
 
-        let breached_entries =
-            check_database_offline(hash_file, &entries, VisibilityPreference::Hide).unwrap();
+        let breached_entries = check_database_offline(
+            hash_file,
+            &entries,
+            &VisibilityPreference::Hide,
+            BreachedPasswordState::Sha1,
+        )
+        .unwrap();
         assert_eq!(breached_entries.len(), 3);
     }
     // The test below checks a test KeePass db against an externally provided hash file at
@@ -60,8 +80,13 @@ mod integration_tests {
         let entries = make_test_entries_from_keepass_4_database_requiring_keyfile();
         let hash_file = PathBuf::from("../hibp/pwned-passwords-sha1-ordered-by-count-v8.txt");
 
-        let breached_entries =
-            check_database_offline(hash_file, &entries, VisibilityPreference::Hide).unwrap();
+        let breached_entries = check_database_offline(
+            hash_file,
+            &entries,
+            &VisibilityPreference::Hide,
+            BreachedPasswordState::Sha1,
+        )
+        .unwrap();
         assert_eq!(breached_entries.len(), 3);
     }
 
