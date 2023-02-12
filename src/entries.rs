@@ -46,25 +46,13 @@ fn unlock_keepass_database(
         None => None,
     };
 
-    match keyfile {
-        Some(keyfile) => {
-            Database::open(
-                &mut db_file, // the database
-                // Some(&db_pass), // password
-                // keyfile.as_mut().map(|f| f as &mut dyn Read), // keyfile
-                DatabaseKey::with_password(&db_pass),
-                // DatabaseKey::with_keyfile(Box::new(&mut keyfile).map(|f| f as &mut dyn Read)),
-                DatabaseKey::with_keyfile(&mut keyfile),
-            )
-        }
-        None => {
-            Database::open(
-                &mut db_file, // the database
-                // Some(&db_pass), // password
-                DatabaseKey::with_password(&db_pass),
-            )
-        }
-    }
+    Database::open(
+        &mut db_file, // the database
+        DatabaseKey {
+            password: Some(&db_pass),                              // password
+            keyfile: keyfile.as_mut().map(|f| f as &mut dyn Read), // keyfile
+        },
+    )
 }
 
 pub fn build_entries_from_keepass_db(
