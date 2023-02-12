@@ -1,5 +1,8 @@
 extern crate keepass;
-use keepass::{Database, DatabaseOpenError, NodeRef};
+use keepass::db::NodeRef;
+use keepass::error::DatabaseOpenError;
+use keepass::Database;
+use keepass::DatabaseKey;
 use std::fs::File;
 use std::io::prelude::Read;
 use std::path::PathBuf;
@@ -43,11 +46,25 @@ fn unlock_keepass_database(
         None => None,
     };
 
-    Database::open(
-        &mut db_file,                                 // the database
-        Some(&db_pass),                               // password
-        keyfile.as_mut().map(|f| f as &mut dyn Read), // keyfile
-    )
+    match keyfile {
+        Some(keyfile) => {
+            Database::open(
+                &mut db_file, // the database
+                // Some(&db_pass), // password
+                // keyfile.as_mut().map(|f| f as &mut dyn Read), // keyfile
+                DatabaseKey::with_password(&db_pass),
+                // DatabaseKey::with_keyfile(Box::new(&mut keyfile).map(|f| f as &mut dyn Read)),
+                DatabaseKey::with_keyfile(&mut keyfile),
+            )
+        }
+        None => {
+            Database::open(
+                &mut db_file, // the database
+                // Some(&db_pass), // password
+                DatabaseKey::with_password(&db_pass),
+            )
+        }
+    }
 }
 
 pub fn build_entries_from_keepass_db(
