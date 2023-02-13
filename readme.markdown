@@ -9,6 +9,8 @@ Read [a blog post about this project](https://sts10.github.io/2019/02/01/medic.h
 ## Maybe use KeePassXC instead...
 I'll note here that [KeePassXC](https://keepassxc.org/), [as of version 2.6.0](https://keepassxc.org/blog/2020-07-07-2.6.0-released/), has a lot of the same features as Medic, some of which are accessible through its easy-to-use graphical interface. I understand that you can also use the KeePassXC CLI tool to check your database against an offline list of password hash digests.
 
+But if you want a simple-ish CLI tool, written in Rust, that you could realistically read over/audit yourself, Medic may be for you.
+
 ## What this tool does
 
 Medic can check the passwords of a given KeePass database in four ways: 
