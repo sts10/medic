@@ -129,7 +129,3 @@ See Issues on GitHub for more, but here are some broad ideas:
 - [password-check](https://github.com/davidhewitt/password-check)
 - [rust-pwned-passwords](https://github.com/master-d/rust-pwned-passwords)
 - [keepass-diff](https://github.com/Narigo/keepass-diff)
-
-### The CLI crate I used
-
-I used [structopt](https://github.com/TeXitoi/structopt).
