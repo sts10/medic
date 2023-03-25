@@ -155,7 +155,8 @@ pub fn check_database_offline(
     if progress_bar_visibility == &VisibilityPreference::Show {
         pb.set_style(
             ProgressStyle::default_bar()
-                .template("{spinner} [{elapsed_precise}] [{bar:40}] ({eta})"),
+                .template("{spinner} [{elapsed_precise}] [{bar:40}] ({eta})")
+                .unwrap(),
         );
     }
 

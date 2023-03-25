@@ -12,4 +12,5 @@ sha1_smol = "1.0.0"
 zxcvbn = "2.2.2"
 clap = { version = "4.1.13", features = ["derive"] }
 csv = "1.2.1"
-indicatif = "0.16"
+# indicatif = "0.16"
+indicatif = "0.17.3"
