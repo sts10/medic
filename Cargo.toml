@@ -1,0 +1,15 @@
+[package]
+name = "medic"
+version = "0.3.42"
+authors = ["sts10 <sschlinkert@gmail.com>"]
+edition = "2021"
+
+[dependencies]
+reqwest = { version = "0.11.15", features = ["blocking", "json"] } 
+rpassword = "7.2.0"
+keepass = "0.6.1"
+sha1_smol = "1.0.0"
+zxcvbn = "2.2.1"
+clap = { version = "4.1.4", features = ["derive"] }
+csv = "1.1"
+indicatif = "0.16"
