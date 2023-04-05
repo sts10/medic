@@ -1,6 +1,6 @@
 # Medic
 
-A Rust CLI that provides a variety of ways to check the "health" of a given KeePass database, including checking passwords against the Have I Been Pwned password list. 
+A Rust CLI that provides a variety of ways to check the "health" of a given KeePass database, including checking passwords against the Have I Been Pwned password list.
 
 **WARNING**: I wrote this program mostly for personal use and to learn Rust. Use on real passwords at your own risk!
 
@@ -13,7 +13,7 @@ But if you want a simple-ish CLI tool, written in Rust, that you could realistic
 
 ## What this tool does
 
-Medic can check the passwords of a given KeePass database in four ways: 
+Medic can check the passwords of a given KeePass database in four ways:
 
 1. Check passwords against the HaveIBeenPwned password database, via the [HaveIBeenPwned API](https://haveibeenpwned.com/API/v2#PwnedPasswords)
 2. Check passwords against a file of password hashes. This requires users to download a large list of SHA-1 hashes of breached or compromised passwords. I tailored it to work with the Pwned Passwords lists from HaveIBeenPwned, which anyone can download [here](https://haveibeenpwned.com/Passwords). Medic will then display a list of any passwords from the given KeePass database that also appear in the list of breached passwords.
@@ -77,17 +77,17 @@ If you're new to torrents, [Transmission](https://transmissionbt.com) is a decen
 
 ## A note on KeePass databases that use an AES KDF (key derivation function)
 
-By default, if your KeePass database uses an _AES_ KDF (key derivation function) Medic will not use your CPU to decrypt your KeePass database. That means that if your databases is locked with a high number of AES key transformation rounds, it will take a while for Medic to open your database. 
+By default, if your KeePass database uses an _AES_ KDF (key derivation function) Medic will not use your CPU to decrypt your KeePass database. That means that if your databases is locked with a high number of AES key transformation rounds, it will take a while for Medic to open your database.
 
 To solve this, either switch your database's KDF from "AES-KDF" to "Argon2", or install Medic by running this command: `RUSTFLAGS='-C target-cpu=native' cargo install --git https://github.com/sts10/medic --branch main`. If you've already installed Medic without the RUSTFLAG, try running `RUSTFLAGS='-C target-cpu=native' cargo install --force --git https://github.com/sts10/medic --branch main`
 
 More info [here](https://github.com/sseemayer/keepass-rs/issues/15#issuecomment-543615390) and [here](https://docs.rs/aes/0.3.2/aes/).
 
-## How I choose to use this tool 
+## How I choose to use this tool
 
-1. [Download the PwnedPasswords list](https://haveibeenpwned.com/Passwords) in the SHA-1 format, ordered by prevalence (this text file will be about 11 GB compressed, 22GB extracted). 
-2. Open your KeePass database in KeePassXC or whatever desktop app you use to open your database. 
-3. Export your KeePass database to a CSV file (In KeePassXC: `Database` menu > "Export to CSV...") (Heads up, this file includes your passwords, so be careful). 
+1. [Download the PwnedPasswords list](https://haveibeenpwned.com/Passwords) in the SHA-1 format, ordered by prevalence (this text file will be about 11 GB compressed, 22GB extracted).
+2. Open your KeePass database in KeePassXC or whatever desktop app you use to open your database.
+3. Export your KeePass database to a CSV file (In KeePassXC: `Database` menu > "Export to CSV...") (Heads up, this file includes your passwords, so be careful).
 4. Lock your KeePass database.
 5. Install Medic using instructions above.
 6. Run Medic by entering the following command: `medic -a=pwnedpassword_hashes.txt -dw <my-exported-database>.csv`. Note any compromised passwords and change them ASAP.
@@ -95,13 +95,13 @@ More info [here](https://github.com/sseemayer/keepass-rs/issues/15#issuecomment-
 
 ## Running tests
 
-`cargo test --release`, though you'll need a file with a list of hashed passwords to pass one of the tests. 
+`cargo test --release`, though you'll need a file with a list of hashed passwords to pass one of the tests.
 
 Note that all test databases passwords are `password`.
 
 ## Checking for security vulnerabilities in Medic's dependencies
 
-You can programmatically check Medic's dependencies for security vulnerabilities with [cargo audit](https://github.com/RustSec/cargo-audit). 
+You can programmatically check Medic's dependencies for security vulnerabilities with [cargo audit](https://github.com/RustSec/cargo-audit).
 
 If you find vulnerabilities that concerns you, you can attempt to update the offending dependent crate yourself in the `Cargo.toml` file. Also, please open an issue on this repo.
 
@@ -110,7 +110,7 @@ If you find vulnerabilities that concerns you, you can attempt to update the off
 See Issues on GitHub for more, but here are some broad ideas:
 
 - [ ] Better error handling (especially if user gets CLI arguments wrong or is using an incompatible KDF)
-- [ ] Write more tests 
+- [ ] Write more tests
 - [ ] Have the program be able to use multiple threads
 - [ ] Offer real packaging / installation options?
 - [ ] Offer an option to check for _similar_ passwords (maybe using [zxcvbn](https://github.com/shssoichiro/zxcvbn-rs)?)
@@ -125,7 +125,7 @@ See Issues on GitHub for more, but here are some broad ideas:
 - [A KeePass extension for checking against HaveIBeenPwned](https://github.com/andrew-schofield/keepass2-haveibeenpwned)
 - [HIBPOfflineCheck](https://github.com/mihaifm/HIBPOfflineCheck) - A Keepass plugin that performs offline checks against the haveibeenpwned passwords file
 
-### Useful projects in Rust 
+### Useful projects in Rust
 - [password-check](https://github.com/davidhewitt/password-check)
 - [rust-pwned-passwords](https://github.com/master-d/rust-pwned-passwords)
 - [keepass-diff](https://github.com/Narigo/keepass-diff)
