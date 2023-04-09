@@ -8,7 +8,8 @@ edition = "2021"
 reqwest = { version = "0.11.14", features = ["blocking", "json"] } 
 rpassword = "7.2.0"
 # keepass = "0.5.0"
-keepass = { git = "https://github.com/sseemayer/keepass-rs", branch = "master" }
+# keepass = { git = "https://github.com/sseemayer/keepass-rs", branch = "master" }
+keepass = "0.6.1"
 sha1_smol = "1.0.0"
 zxcvbn = "2.2.1"
 clap = { version = "4.1.4", features = ["derive"] }
