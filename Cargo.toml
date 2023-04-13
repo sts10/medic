@@ -1,6 +1,6 @@
 [package]
 name = "medic"
-version = "0.3.46"
+version = "0.3.47"
 authors = ["sts10 <sschlinkert@gmail.com>"]
 edition = "2021"
 
@@ -10,7 +10,6 @@ rpassword = "7.2.0"
 keepass = "0.6.1"
 sha1_smol = "1.0.0"
 zxcvbn = "2.2.2"
-# clap = { version = "4.1.13", features = ["derive"] }
 clap = { version = "4.2.1", features = ["derive"] }
 csv = "1.2.1"
 indicatif = "0.17.3"
