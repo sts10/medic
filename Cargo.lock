@@ -1027,7 +1027,7 @@ dependencies = [
 
 [[package]]
 name = "medic"
-version = "0.3.48"
+version = "0.3.49"
 dependencies = [
  "clap",
  "csv",
