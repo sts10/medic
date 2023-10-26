@@ -65,7 +65,9 @@ Options:
 
 1. [Install Rust](https://www.rust-lang.org/tools/install) if you haven't already
 2. Run: `cargo install --git https://github.com/sts10/medic --branch main` or for better performance decrypting AES KeePass databases (see below), run: `RUSTFLAGS='-C target-cpu=native' cargo install --git https://github.com/sts10/medic --branch main`. See [keepass-rs documentation](https://github.com/sseemayer/keepass-rs#installation) for more optimizations.
-3. Optional: If you'd like to check if any of your passwords have been breached _without_ sending any information about them over the internet, you'll need to [download the Pwned Passwords list](https://haveibeenpwned.com/Passwords), ideally via torrent (see below). Choose the SHA-1 version, the one ordered by prevalence. You'll need about 35 GB of space free (in total) to do this. The torrent downloads a `.7z` compressed file. Double click it to extract it to a ~22 GB text file. That's what this program will need to work with.
+3. Optional: If you'd like to check if any of your passwords have been breached _without_ sending any information about them over the internet, you'll need to [download the Pwned Passwords list](https://haveibeenpwned.com/Passwords). 
+
+Note: As of May 2022, Pwned Passwords has changed the way it makes hashed passwords available.
 
 ### Dependencies
 
