@@ -1,6 +1,6 @@
 mod integration_tests {
-    use entries::build_entries_from_keepass_db;
     use entries::Entry;
+    use entries::build_entries_from_keepass_db;
     use medic::*;
     use std::path::PathBuf;
 

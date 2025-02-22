@@ -1,8 +1,8 @@
 extern crate keepass;
-use keepass::db::NodeRef;
-use keepass::error::DatabaseOpenError;
 use keepass::Database;
 use keepass::DatabaseKey;
+use keepass::db::NodeRef;
+use keepass::error::DatabaseOpenError;
 use std::fs::File;
 // use std::io::prelude::Read;
 use std::path::PathBuf;

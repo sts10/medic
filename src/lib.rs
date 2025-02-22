@@ -311,7 +311,10 @@ pub fn create_file(dest: &Destination) -> std::io::Result<()> {
         Destination::FilePath(file_path) => {
             match File::open(file_path) {
                 Ok(f) => {
-                    eprintln!("File where you want to write, {:?}, already exists. Would you like to overwrite? (y/N)", f);
+                    eprintln!(
+                        "File where you want to write, {:?}, already exists. Would you like to overwrite? (y/N)",
+                        f
+                    );
                     if gets()? == "y" {
                         File::create(file_path)?;
                     } else {
