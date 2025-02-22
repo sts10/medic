@@ -4,7 +4,7 @@ use keepass::error::DatabaseOpenError;
 use keepass::Database;
 use keepass::DatabaseKey;
 use std::fs::File;
-use std::io::prelude::Read;
+// use std::io::prelude::Read;
 use std::path::PathBuf;
 
 #[derive(Debug, Clone)]
@@ -38,7 +38,7 @@ fn unlock_keepass_database(
         Err(e) => panic!("Error opening KeePass database file: {}", e),
     };
 
-    let mut keyfile: Option<File> = match keyfile_path {
+    let keyfile: Option<File> = match keyfile_path {
         Some(keyfile_path) => match File::open(keyfile_path) {
             Ok(keyfile) => Some(keyfile),
             Err(e) => panic!("Error opening specified keyfile: {}", e),
@@ -46,13 +46,15 @@ fn unlock_keepass_database(
         None => None,
     };
 
-    Database::open(
-        &mut db_file, // the database
-        DatabaseKey {
-            password: Some(&db_pass),                              // password
-            keyfile: keyfile.as_mut().map(|f| f as &mut dyn Read), // keyfile
-        },
-    )
+    // The key is both the password and the keyfile
+    // https://docs.rs/keepass/latest/keepass/struct.DatabaseKey.html#method.with_keyfile
+    let key = match keyfile {
+        Some(mut keyfile) => DatabaseKey::new()
+            .with_password(&db_pass)
+            .with_keyfile(&mut keyfile),
+        None => Ok(DatabaseKey::new().with_password(&db_pass)),
+    };
+    Database::open(&mut db_file, key?)
 }
 
 pub fn build_entries_from_keepass_db(
