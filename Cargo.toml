@@ -10,7 +10,7 @@ description = "Check the 'health' of passwords in a KeePass database"
 
 [dependencies]
 reqwest = { version = "0.11.22", features = ["blocking", "json"] } 
-rpassword = "7.3.1"
+rpassword = "7.5.0"
 keepass = "0.7.29"
 sha1_smol = "1.0.0"
 zxcvbn = "2.2.2"
